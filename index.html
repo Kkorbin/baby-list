@@ -38,6 +38,8 @@ nav button[aria-selected="true"]{background:var(--card);color:var(--ink);box-sha
 h2.cat{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:18px 0 8px}
 .item{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:8px}
 .item .top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.item .pic{flex:none;width:72px;height:72px;border-radius:10px;background:#fff;border:1px solid var(--line);object-fit:contain;padding:4px}
+.item .head{display:flex;gap:12px;align-items:flex-start;flex:1;min-width:0}
 .item .name{font-weight:600}
 .item .price{font-weight:700;white-space:nowrap;text-align:right}
 .item .prod{color:var(--muted);font-size:13px;margin-top:2px;font-weight:400}
@@ -141,7 +143,7 @@ function shape(raw) {
       const qty = num(r[3]), price = num(r[5]);
       items.push({ stage, cat: r[0] || cat, name: r[1], qty, product: r[4], price, total: qty * price,
         url: r[16] || '', rating: r[8], reviews: r[9], why: r[10], tip: r[11], status: r[12] || 'Idea',
-        notes: r[13], registry: r[15] });
+        notes: r[13], registry: r[15], img: /^https:\/\/m\.media-amazon\.com\//.test(r[17] || '') ? r[17] : '' });
     });
   }
   const todo = []; let sec = '';
@@ -171,7 +173,7 @@ function itemCard(it) {
   const link = it.url ? `<a href="${esc(it.url)}" target="_blank" rel="noopener">View on Amazon</a>` : '';
   const rating = it.rating ? `★ ${esc(it.rating)}${it.reviews ? ` (${esc(it.reviews)})` : ''}` : '';
   return `<div class="item is-${esc(it.status)}">
-    <div class="top"><div><div class="name">${esc(it.name)}</div><div class="prod">${esc(it.product)}</div></div>
+    <div class="top"><div class="head">${it.img ? `<a href="${esc(it.url)}" target="_blank" rel="noopener"><img class="pic" src="${esc(it.img)}" alt="" loading="lazy" referrerpolicy="no-referrer"></a>` : ''}<div><div class="name">${esc(it.name)}</div><div class="prod">${esc(it.product)}</div></div></div>
       <div class="price">${it.price ? money(it.total) : 'Free'}${it.qty > 1 ? `<div class="prod">${it.qty} × ${money(it.price)}</div>` : ''}</div></div>
     ${it.why ? `<div class="why">${esc(it.why)}</div>` : ''}
     ${it.tip ? `<div class="tip">💡 ${esc(it.tip)}</div>` : ''}
