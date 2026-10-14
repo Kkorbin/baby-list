@@ -2,451 +2,260 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="robots" content="noindex">
-<title>Baby Arrival List</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Baby List</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍼</text></svg>">
 <style>
-/* Layout: one calm column — totals and a due-date timeline up top, then
-   filterable category sections of item cards with a status switch each. */
-:root {
-  --bg: #f4f6f5;
-  --surface: #ffffff;
-  --ink: #1c2622;
-  --muted: #5d6b65;
-  --line: #dde4e0;
-  --accent: #2d6a5f;      /* deep juniper */
-  --accent-soft: #e2efeb;
-  --want: #b7791f;        /* marigold */
-  --want-soft: #fbf0dc;
-  --got: #2d6a5f;
-  --skip: #8a8f8c;
-  --danger: #a63d32;
-  --font-display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
-  --font-body: "Atkinson Hyperlegible", "Segoe UI", system-ui, -apple-system, sans-serif;
-  --radius: 10px;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #131917; --surface: #1b2320; --ink: #e6ece9; --muted: #9aa8a2; --line: #2c3833;
-    --accent: #6fbfae; --accent-soft: #1f322d; --want: #e3a948; --want-soft: #33291a;
-    --got: #6fbfae; --skip: #79807d; --danger: #e07a6e; color-scheme: dark;
-  }
-}
-:root[data-theme="dark"] {
-  --bg: #131917; --surface: #1b2320; --ink: #e6ece9; --muted: #9aa8a2; --line: #2c3833;
-  --accent: #6fbfae; --accent-soft: #1f322d; --want: #e3a948; --want-soft: #33291a;
-  --got: #6fbfae; --skip: #79807d; --danger: #e07a6e; color-scheme: dark;
-}
-* { box-sizing: border-box; }
-body { background: var(--bg); color: var(--ink); font: 15px/1.5 var(--font-body); }
-.wrap { max-width: 860px; margin: 0 auto; padding-inline: 16px; padding-block: 28px 64px; display: grid; gap: 28px; }
-h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; }
-h1 { font-size: clamp(30px, 6vw, 44px); line-height: 1.05; font-weight: 700; letter-spacing: -0.01em; }
-h2 { font-size: 22px; font-weight: 700; }
-a { color: var(--accent); }
-.eyebrow { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
-.lede { color: var(--muted); max-width: 62ch; margin: 8px 0 0; }
-.num { font-variant-numeric: tabular-nums; }
-
-/* Totals */
-.totals { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
-.total { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; }
-.total b { display: block; font-family: var(--font-display); font-size: 26px; font-weight: 700; }
-.total span { color: var(--muted); font-size: 13px; }
-
-/* Timeline */
-.timeline { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; position: relative; }
-.timeline::before { content: ""; position: absolute; left: 6px; right: 6px; top: 7px; height: 2px; background: var(--line); }
-.step { position: relative; padding-top: 22px; padding-right: 10px; min-width: 0; }
-.step::before { content: ""; position: absolute; top: 1px; left: 0; width: 14px; height: 14px; border-radius: 50%; background: var(--surface); border: 2px solid var(--accent); }
-.step.now::before { background: var(--accent); }
-.step strong { display: block; font-size: 14px; }
-.step span { display: block; color: var(--muted); font-size: 13px; }
-@media (max-width: 560px) {
-  .timeline { grid-template-columns: 1fr; gap: 14px; }
-  .timeline::before { left: 6px; right: auto; top: 6px; bottom: 6px; width: 2px; height: auto; }
-  .step { padding-top: 0; padding-left: 26px; }
-}
-
-/* Filters */
-.filters { display: grid; gap: 10px; position: sticky; top: env(safe-area-inset-top, 0px); background: var(--bg); padding-block: 10px; z-index: 2; border-bottom: 1px solid var(--line); }
-.chips { display: flex; flex-wrap: wrap; gap: 6px; }
-.chip { font: inherit; font-size: 13px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 5px 12px; cursor: pointer; }
-.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--surface); }
-.chip:focus-visible, button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-
-/* Sections and items */
-.section { display: grid; gap: 10px; }
-.section-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
-.section-head span { color: var(--muted); font-size: 13px; }
-.items { display: grid; gap: 8px; }
-.item { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 16px; }
-.item[data-status="skip"] { opacity: .55; }
-.item[data-status="got"] .item-name { text-decoration: line-through; text-decoration-color: var(--got); }
-.item-main { min-width: 0; display: grid; gap: 4px; }
-.item-name { font-family: var(--font-display); font-weight: 700; font-size: 17px; }
-.item-product { font-size: 14px; overflow-wrap: anywhere; }
-.item-summary { color: var(--muted); font-size: 14px; }
-.item-note { font-size: 13px; color: var(--ink); background: var(--accent-soft); border-radius: 6px; padding: 6px 10px; }
-.meta { display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: 13px; color: var(--muted); align-items: center; }
-.pill { font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); }
-.pill.before { background: var(--want-soft); color: var(--want); }
-.pill.optional { background: transparent; border: 1px solid var(--line); color: var(--muted); }
-.item-side { display: grid; justify-items: end; align-content: start; gap: 8px; }
-.price { font-family: var(--font-display); font-weight: 700; font-size: 20px; }
-.status { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
-.status button { font: inherit; font-size: 12px; border: 0; background: var(--surface); color: var(--muted); padding: 5px 9px; cursor: pointer; }
-.status button + button { border-left: 1px solid var(--line); }
-.status button[aria-pressed="true"][data-v="want"] { background: var(--want-soft); color: var(--want); font-weight: 700; }
-.status button[aria-pressed="true"][data-v="got"] { background: var(--accent-soft); color: var(--got); font-weight: 700; }
-.status button[aria-pressed="true"][data-v="skip"] { background: var(--line); color: var(--ink); font-weight: 700; }
-.status button:disabled { cursor: default; }
-.note-btn { font: inherit; font-size: 12px; background: none; border: 0; color: var(--accent); cursor: pointer; padding: 0; }
-.note-edit { grid-column: 1 / -1; display: grid; gap: 6px; }
-.note-edit textarea { font: inherit; font-size: 14px; width: 100%; min-height: 60px; padding: 8px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); }
-@media (max-width: 520px) {
-  .item { grid-template-columns: 1fr; }
-  .item-side { justify-items: start; grid-auto-flow: column; align-items: center; justify-content: space-between; }
-}
-
-/* Tips */
-.tips { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
-.tip { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; display: grid; gap: 4px; align-content: start; }
-.tip h3 { font-size: 16px; }
-.tip p { margin: 0; color: var(--muted); font-size: 14px; }
-
-/* Add form */
-form.add { background: var(--surface); border: 1px dashed var(--line); border-radius: var(--radius); padding: 14px 16px; display: grid; gap: 10px; }
-.row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; }
-label { display: grid; gap: 4px; font-size: 13px; color: var(--muted); }
-input, select { font: inherit; font-size: 14px; padding: 8px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); min-width: 0; }
-.btn { font: inherit; font-weight: 700; background: var(--accent); color: var(--surface); border: 0; border-radius: 8px; padding: 9px 14px; cursor: pointer; justify-self: start; }
-.btn.ghost { background: none; color: var(--danger); padding: 0; font-weight: 400; font-size: 12px; }
-.empty, .notice { color: var(--muted); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; }
-footer { color: var(--muted); font-size: 13px; }
-@media (max-width: 560px) { .filters { position: static; } }
-.dl-row { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; margin-top: 14px; }
-.dl-note { color: var(--muted); font-size: 13px; }
-@media (prefers-reduced-motion: no-preference) { .item { transition: opacity .2s; } }
+:root{--bg:#f6f7fb;--card:#fff;--ink:#1d2433;--muted:#667085;--line:#e4e7ee;--accent:#3d5a80;--accent-ink:#fff;
+  --idea:#eef0f4;--want:#ffe5a0;--got:#d4edbc;--skip:#e6e6e6;--bar:#7aa874;--chip-ink:#1d2433}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#11151c;--card:#1a202b;--ink:#e8ecf3;--muted:#98a2b3;--line:#2a3240;
+  --accent:#8fb3e0;--accent-ink:#11151c;--idea:#2a3240;--want:#5c4a12;--got:#2f4a24;--skip:#30343b;--bar:#7aa874;--chip-ink:#e8ecf3}}
+:root[data-theme="dark"]{--bg:#11151c;--card:#1a202b;--ink:#e8ecf3;--muted:#98a2b3;--line:#2a3240;
+  --accent:#8fb3e0;--accent-ink:#11151c;--idea:#2a3240;--want:#5c4a12;--got:#2f4a24;--skip:#30343b;--bar:#7aa874;--chip-ink:#e8ecf3}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+a{color:var(--accent)}
+header{background:var(--accent);color:var(--accent-ink);padding:18px 16px 14px}
+header h1{margin:0;font-size:22px}
+header .sub{opacity:.85;font-size:13px;margin-top:2px}
+.wrap{max-width:860px;margin:0 auto;padding:0 16px}
+header .wrap{padding:0}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.btn{border:1px solid currentColor;background:transparent;color:inherit;border-radius:999px;padding:6px 12px;font:inherit;font-size:13px;text-decoration:none;cursor:pointer}
+nav{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+nav .wrap{display:flex;gap:4px;overflow-x:auto;padding-top:8px;padding-bottom:8px}
+nav button{flex:none;border:0;background:transparent;color:var(--muted);font:inherit;font-weight:600;padding:8px 12px;border-radius:8px;cursor:pointer}
+nav button[aria-selected="true"]{background:var(--card);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:10px;margin:16px 0}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px}
+.stat b{display:block;font-size:20px}
+.stat span{color:var(--muted);font-size:12px}
+.bar{height:6px;background:var(--line);border-radius:3px;margin-top:8px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--bar)}
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 12px}
+.filters button{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:5px 11px;font:inherit;font-size:13px;cursor:pointer}
+.filters button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+h2.cat{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:18px 0 8px}
+.item{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:8px}
+.item .top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.item .name{font-weight:600}
+.item .price{font-weight:700;white-space:nowrap;text-align:right}
+.item .prod{color:var(--muted);font-size:13px;margin-top:2px;font-weight:400}
+.item .why{font-size:14px;margin-top:6px}
+.item .tip{font-size:13px;color:var(--muted);margin-top:4px}
+.item .note{font-size:13px;margin-top:6px;padding:6px 8px;border-radius:8px;background:var(--idea)}
+.meta{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:8px;font-size:12px}
+.chip{border-radius:999px;padding:2px 9px;font-weight:600;color:var(--chip-ink);background:var(--idea)}
+.chip.Want{background:var(--want)}.chip.Got{background:var(--got)}.chip.Skip{background:var(--skip)}.chip.Added{background:var(--got)}
+.item.is-Got .name,.item.is-Skip .name{text-decoration:line-through;opacity:.7}
+.check{display:flex;gap:10px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:6px}
+.check .box{flex:none;width:20px;height:20px;border-radius:5px;border:2px solid var(--muted);display:grid;place-items:center;font-size:13px;margin-top:1px}
+.check.done .box{background:var(--bar);border-color:var(--bar);color:#fff}
+.check.done .t{text-decoration:line-through;opacity:.65}
+.check .d{color:var(--muted);font-size:13px}
+.check .when{margin-left:auto;color:var(--muted);font-size:12px;white-space:nowrap}
+.check.overdue .when{color:#c0392b;font-weight:700}
+.empty,.status{color:var(--muted);text-align:center;padding:24px 0}
+footer{color:var(--muted);font-size:12px;text-align:center;padding:24px 16px 40px}
 </style>
-
-<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)} body{margin:0} img{max-width:100%} [hidden]{display:none!important}</style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <div class="eyebrow">Due February 2027 · shopping in January</div>
-    <h1>Baby Arrival List</h1>
-    <p class="lede">Everything to buy before the baby comes, grouped by room and purpose, with Amazon picks and prices checked on October 9, 2026. Nothing here is bought yet. Mark items as you decide. Choices save on this device; download the spreadsheet to share them.</p>
-    <div class="dl-row" id="dl-row">
-      <button class="btn" type="button" id="dl-btn">Download spreadsheet (.xlsx)</button>
-      <span class="dl-note" id="dl-note">Your current list with statuses and notes, as an Excel file. Or grab the <a href="Baby-Arrival-List.xlsx">formatted version</a> with dropdowns and totals.</span>
+<header>
+  <div class="wrap">
+    <h1>🍼 Baby List</h1>
+    <div class="sub" id="sub">Loading from the shared Google Sheet…</div>
+    <div class="actions">
+      <a class="btn" id="edit" target="_blank" rel="noopener">✏️ Edit in Google Sheets</a>
+      <a class="btn" id="xlsx">⬇️ Download spreadsheet</a>
+      <button class="btn" id="refresh">↻ Refresh</button>
     </div>
-  </header>
-
-  <section class="totals" aria-label="Totals">
-    <div class="total"><b class="num" id="t-before">–</b><span>Needed before birth</span></div>
-    <div class="total"><b class="num" id="t-all">–</b><span>Everything not skipped</span></div>
-    <div class="total"><b class="num" id="t-want">–</b><span>Marked “Want”</span></div>
-    <div class="total"><b class="num" id="t-got">–</b><span>Items you have</span></div>
-  </section>
-
-  <section aria-label="Timeline">
-    <div class="timeline">
-      <div class="step now"><strong>Now · Oct</strong><span>Build the list. No buying.</span></div>
-      <div class="step"><strong>~Dec 1</strong><span>Registry 15% completion discount opens (60 days before due date)</span></div>
-      <div class="step"><strong>Early–mid Jan</strong><span>Buy the “before birth” items. Install the car seat by week 36.</span></div>
-      <div class="step"><strong>February</strong><span>Baby arrives. Buy “later” items as you need them.</span></div>
-    </div>
-  </section>
-
-  <div class="filters">
-    <div class="chips" id="cat-chips" role="group" aria-label="Category"></div>
-    <div class="chips" id="pri-chips" role="group" aria-label="When"></div>
   </div>
-
-  <div id="list" class="items" aria-live="polite">
-    <p class="empty">Loading your list…</p>
-  </div>
-
-  <section class="section" aria-label="Add an item">
-    <h2>Add something</h2>
-    <form class="add" id="add-form">
-      <div class="row">
-        <label for="f-name">Item<input id="f-name" required placeholder="e.g. Nightlight"></label>
-        <label for="f-cat">Category<select id="f-cat"></select></label>
-        <label for="f-pri">When<select id="f-pri"></select></label>
-      </div>
-      <div class="row">
-        <label for="f-price">Price ($)<input id="f-price" type="number" min="0" step="0.01" placeholder="0.00"></label>
-        <label for="f-url">Link<input id="f-url" type="url" placeholder="https://www.amazon.com/dp/…"></label>
-      </div>
-      <button class="btn" type="submit">Add to list</button>
-      <p class="notice" id="add-msg" hidden></p>
-    </form>
-  </section>
-
-  <section class="section" aria-label="Money savers and tips">
-    <h2>Money savers and tips</h2>
-    <div class="tips">
-      <div class="tip"><h3>Amazon Baby Registry, kept private</h3><p>Make a registry, set it to private, and add these items. With Prime you get a free welcome box (add 10 items, $10 bought from it) and a 15% completion discount (up to $300) starting 60 days before the due date. Buying is not required to make one.</p></div>
-      <div class="tip"><h3>Breast pump through insurance</h3><p>Most plans must cover a pump. A service like Aeroflow checks coverage and ships one free. Start in December.</p></div>
-      <div class="tip"><h3>Free car seat check</h3><p>Safe Kids Maricopa County runs free checks. Install the seat by week 36 and get it checked.</p></div>
-      <div class="tip"><h3>Don’t overbuy newborn sizes</h3><p>Many babies outgrow newborn clothes and diapers in 2–4 weeks. Buy one pack of newborn diapers and lean on size 1 and 0–3 months.</p></div>
-      <div class="tip"><h3>Hospital freebies</h3><p>Most hospitals send you home with diapers, wipes, peri bottles, pads, and mesh underwear. Take them all.</p></div>
-      <div class="tip"><h3>Buy new, not used</h3><p>Car seats and crib mattresses should be new. Most other things (bouncer, tub, clothes) are fine secondhand.</p></div>
-      <div class="tip"><h3>February in Mesa</h3><p>Nights dip into the 40s. Use a sleep sack, not loose blankets, and thin layers in the car seat, never a puffy coat under the straps.</p></div>
-      <div class="tip"><h3>Safe sleep</h3><p>Baby sleeps on their back, alone, on a firm flat surface with only a fitted sheet. No bumpers, pillows, or loose blankets.</p></div>
-    </div>
-  </section>
-
-  <footer>Prices change often and are from Amazon on Oct 9, 2026. Check the price before you buy. Infant medicine doses should come from your pediatrician.</footer>
-</div>
-
+</header>
+<nav><div class="wrap" role="tablist" id="tabs"></div></nav>
+<main class="wrap">
+  <div id="stats" class="stats"></div>
+  <div id="filters"></div>
+  <div id="view"><div class="status">Loading…</div></div>
+</main>
+<footer>Read-only view of the shared Google Sheet. Make changes in the sheet, then tap Refresh here.<br>Prices are checked on Amazon every Sunday.</footer>
 <script>
-const CATEGORIES = ["Travel", "Sleep", "Feeding", "Diapering", "Clothing", "Bath & care", "Health", "Play", "For mom", "Hospital bag"];
-const PRIORITIES = [
-  { v: "before", label: "Before birth" },
-  { v: "first-weeks", label: "First weeks" },
-  { v: "later", label: "Later (2+ months)" },
-  { v: "optional", label: "Optional" },
-];
-const STATUSES = [{ v: "want", label: "Want" }, { v: "got", label: "Got" }, { v: "skip", label: "Skip" }];
-const priLabel = v => (PRIORITIES.find(p => p.v === v) || {}).label || v;
-const money = n => "$" + Math.round(n).toLocaleString("en-US");
-const price2 = n => "$" + Number(n).toFixed(2);
+const SHEET_ID = '1FF1emRD44TV5Z7ZaTbs8Smn3cc2Rtp_0DgR8RicBKac';
+const GIDS = { 'Before birth': 0, 'First weeks': 900034665, 'Later': 808397599, 'Optional': 1519517898, 'To-do': 1733196324, 'Hospital bag': 39220311 };
+const STAGES = ['Before birth', 'First weeks', 'Later', 'Optional'];
+const CACHE = 'baby-list-sheet-v2';
+const VIEWS = [['shop', 'Shopping'], ['registry', 'Registry'], ['todo', 'To-do'], ['bag', 'Hospital bag']];
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const money = (n) => '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const num = (s) => { const n = parseFloat(String(s).replace(/[^0-9.\-]/g, '')); return isNaN(n) ? 0 : n; };
 
-const SEED = [{"id": "travel_system", "name": "Car seat + stroller (travel system)", "category": "Travel", "priority": "before", "qty": "1", "buyQty": 1, "summary": "Infant car seat that clicks into a matching stroller. The one thing the hospital requires before you leave.", "tip": "Budget pick. Install it by week 36 and get a free car seat check.", "status": "idea", "order": 0, "product": "Baby Trend EZ Ride Travel System with EZ-Lift Infant Car Seat, Dash Grey", "price": 143.99, "url": "https://www.amazon.com/dp/B0BT4LCFHT", "rating": "4.6", "reviews": "1,500"}, {"id": "car_seat", "name": "Upgrade: Chicco KeyFit 35 car seat", "category": "Travel", "priority": "optional", "qty": "1", "buyQty": 1, "summary": "A top-rated infant car seat with easy, very secure installation. Lasts longer (up to 35 lb).", "tip": "Only if you skip the travel system. Pair with a Chicco-compatible stroller.", "status": "idea", "order": 1, "product": "Chicco KeyFit 35 Infant Car Seat (check the listing says KeyFit 35)", "price": 209.99, "url": "https://www.amazon.com/dp/B07MLW6ZSQ", "rating": "4.8", "reviews": "890"}, {"id": "car_mirror", "name": "Back-seat mirror", "category": "Travel", "priority": "before", "qty": "1", "buyQty": 1, "summary": "Lets you see the rear-facing baby from the driver seat.", "tip": null, "status": "idea", "order": 2, "product": "Shynerk Baby Car Mirror, Safety Car Seat Mirror for Rear Facing Infant with Wide Crystal Clear View…", "price": 17.59, "url": "https://www.amazon.com/dp/B07F8HTSKD", "rating": "4.7", "reviews": "31,432"}, {"id": "sun_shade", "name": "Car window sun shades", "category": "Travel", "priority": "before", "qty": "2-pack", "buyQty": 1, "summary": "Cling-on shades for the back side windows. A must for Arizona sun.", "tip": null, "status": "idea", "order": 3, "product": "Munchkin Brica Sun Safety Car Window Shade for Baby, 2 Pack, Black", "price": 11.99, "url": "https://www.amazon.com/dp/B00WH7Y7TY", "rating": "4.3", "reviews": "13,836"}, {"id": "diaper_bag", "name": "Diaper bag backpack", "category": "Travel", "priority": "before", "qty": "1", "buyQty": 1, "summary": "Big backpack-style bag with insulated bottle pockets and a changing pad.", "tip": "Cheaper option: Tenot diaper backpack, about $19.", "status": "idea", "order": 4, "product": "BabbleRoo Extra Large Diaper Bag Backpack, Expandable Baby Bag with Up to 50% More Capacity - Travel…", "price": 60.99, "url": "https://www.amazon.com/dp/B0CYXTMMVS", "rating": "4.8", "reviews": "12,831"}, {"id": "carrier", "name": "Baby carrier", "category": "Travel", "priority": "first-weeks", "qty": "1", "buyQty": 1, "summary": "Soft structured carrier, front or back, from about 8 lb. Hands-free errands and fussy evenings.", "tip": null, "status": "idea", "order": 5, "product": "Infantino Flip 4-in-1 Baby Carrier Convertible Ergonomic, Gray", "price": 28.89, "url": "https://www.amazon.com/dp/B00M0DWQYI", "rating": "4.6", "reviews": "83,603"}, {"id": "wrap", "name": "Stretchy newborn wrap", "category": "Travel", "priority": "optional", "qty": "1", "buyQty": 1, "summary": "Soft fabric wrap that newborns love for the first 3 months.", "tip": "Nice extra; the carrier above covers most needs.", "status": "idea", "order": 6, "product": "Boba Baby Wrap Carrier - Stretch Cotton Newborn Sling, Gray", "price": 39.99, "url": "https://www.amazon.com/dp/B005SP2LWW", "rating": "4.6", "reviews": "28,838"}, {"id": "playard", "name": "Pack ’n Play with bassinet", "category": "Sleep", "priority": "before", "qty": "1", "buyQty": 1, "summary": "Bedside bassinet for the first months, then a playard. Doubles as the travel crib.", "tip": "Means you can wait on the crib until the baby is 4–6 months old.", "status": "idea", "order": 7, "product": "Graco Close2Baby Pack 'n Play Playard, Derby", "price": 199.99, "url": "https://www.amazon.com/dp/B08K3314ZL", "rating": "4.8", "reviews": "2,595"}, {"id": "playard_sheets", "name": "Pack ’n Play fitted sheets", "category": "Sleep", "priority": "before", "qty": "2-pack × 2", "buyQty": 2, "summary": "Fitted sheets sized 38×26\" for the playard mattress. Blowouts happen at night, so have spares.", "tip": null, "status": "idea", "order": 8, "product": "Yoofoss 2-Pack Pack and Play Sheets Fitted 38x26 (Green+Giraffe)", "price": 9.99, "url": "https://www.amazon.com/dp/B0D9781GDC", "rating": "4.9", "reviews": "3,426"}, {"id": "swaddle", "name": "Swaddle sleep sacks", "category": "Sleep", "priority": "before", "qty": "2", "buyQty": 2, "summary": "Wearable swaddle with Velcro wings. Easier and safer than wrapping a blanket.", "tip": "Newborn size fits 6–12 lb.", "status": "idea", "order": 9, "product": "HALO SleepSack Swaddle | Cotton | 1.5 TOG | 68-75°F | 6-12 lbs |Cream", "price": 34.95, "url": "https://www.amazon.com/dp/B001PB8G04", "rating": "4.6", "reviews": "24,970"}, {"id": "muslin", "name": "Muslin swaddle blankets", "category": "Sleep", "priority": "first-weeks", "qty": "4-pack", "buyQty": 1, "summary": "Light, breathable blankets for swaddling, nursing cover, stroller shade and burp cloth.", "tip": null, "status": "idea", "order": 10, "product": "aden + anais Swaddle Blanket, Boutique Muslin Blankets for Girls & Boys, Baby Receiving Swaddles, Ideal…", "price": 39.95, "url": "https://www.amazon.com/dp/B08L6YRKPZ", "rating": "4.8", "reviews": "6,349"}, {"id": "white_noise", "name": "Sound machine + night light", "category": "Sleep", "priority": "first-weeks", "qty": "1", "buyQty": 1, "summary": "White noise plus a dim night light for feeds, controlled from your phone.", "tip": null, "status": "idea", "order": 11, "product": "Hatch Baby Sound Machine & Night Light Routine Builder (Mint)", "price": 79.99, "url": "https://www.amazon.com/dp/B0FL4HPWHY", "rating": "4.7", "reviews": "36,538"}, {"id": "wyze_cam", "name": "Baby monitor", "category": "Sleep", "priority": "optional", "qty": "1", "buyQty": 0, "summary": "Video monitor with night vision and alerts on your phone.", "tip": "You already own Wyze cams. Reuse one and spend $0.", "status": "idea", "order": 12, "product": "WYZE Cam v4 (Latest Model), 2.5K AI Security Camera, Indoor/Outdoor Cameras for Home Security, Baby Monitor &…", "price": 44.97, "url": "https://www.amazon.com/dp/B0CJ9YX7DG", "rating": "4.3", "reviews": "11,426"}, {"id": "sleep_sack", "name": "Sleep sacks (wearable blanket)", "category": "Sleep", "priority": "later", "qty": "2", "buyQty": 2, "summary": "Replaces blankets once baby is out of the swaddle, around 3–4 months.", "tip": null, "status": "idea", "order": 13, "product": "HALO SleepSack, 100% Cotton Wearable Blanket, Swaddle Transition Sleeping Bag, TOG 0.5", "price": 34.95, "url": "https://www.amazon.com/dp/B0DDYXG796", "rating": "4.8", "reviews": "23,503"}, {"id": "crib", "name": "Convertible crib", "category": "Sleep", "priority": "later", "qty": "1", "buyQty": 1, "summary": "Converts to toddler bed, daybed and full-size bed.", "tip": "Buy when the baby moves out of the bassinet.", "status": "idea", "order": 14, "product": "Delta Children Essex 4-in-1 Convertible Baby Crib, Bianca White with Natural Legs", "price": 176.52, "url": "https://www.amazon.com/dp/B07Y3WQHZ6", "rating": "4.7", "reviews": "4,512"}, {"id": "crib_mattress", "name": "Crib mattress", "category": "Sleep", "priority": "later", "qty": "1", "buyQty": 1, "summary": "Firm, GREENGUARD Gold certified, with an infant side and a toddler side.", "tip": "Always buy new. Newton Essential (~$200) is a breathable, washable upgrade.", "status": "idea", "order": 15, "product": "Dream On Me 2-in-1 Serene Snooze Baby Crib Mattress, GREENGUARD Gold", "price": 52.0, "url": "https://www.amazon.com/dp/B0FJM3CCBJ", "rating": "4.6", "reviews": "8,822"}, {"id": "pump", "name": "Breast pump (through insurance)", "category": "Feeding", "priority": "before", "qty": "1", "buyQty": 1, "summary": "Most insurance plans must cover an electric breast pump at no cost.", "tip": "Request it in December; it ships before the due date.", "status": "idea", "order": 16, "product": "Electric pump covered by health insurance (e.g., via Aeroflow)", "price": 0, "url": "https://aeroflowbreastpumps.com/", "rating": null, "reviews": null}, {"id": "bottles", "name": "Bottles (4 oz)", "category": "Feeding", "priority": "before", "qty": "4-pack", "buyQty": 1, "summary": "Anti-colic newborn bottles. Even breastfed babies often get some bottles.", "tip": "Start with one pack and see what your baby likes.", "status": "idea", "order": 17, "product": "Dr. Brown's Anti-Colic Options+ Narrow Baby Bottle, Clear, 4 oz, 4-Pack", "price": 24.49, "url": "https://www.amazon.com/dp/B01845QGKK", "rating": "4.7", "reviews": "53,509"}, {"id": "bottle_brush", "name": "Bottle brush", "category": "Feeding", "priority": "before", "qty": "1", "buyQty": 1, "summary": "Brush with a built-in nipple cleaner.", "tip": null, "status": "idea", "order": 18, "product": "OXO Tot Baby Bottle Brush with Nipple Cleaner, Baby Bottle Cleaner, Blossom", "price": 9.99, "url": "https://www.amazon.com/dp/B0FNS3G5KK", "rating": "4.8", "reviews": "37,210"}, {"id": "drying_rack", "name": "Bottle drying rack", "category": "Feeding", "priority": "first-weeks", "qty": "1", "buyQty": 1, "summary": "Countertop rack for bottles, pump parts and pacifiers.", "tip": null, "status": "idea", "order": 19, "product": "Boon Lawn Countertop Baby Bottle Drying Rack - Spring Green - 13.5x11x2.5", "price": 21.99, "url": "https://www.amazon.com/dp/B004OR1DTC", "rating": "4.8", "reviews": "13,942"}, {"id": "burp_cloths", "name": "Burp cloths", "category": "Feeding", "priority": "before", "qty": "10-pack", "buyQty": 1, "summary": "Absorbent muslin cloths. You will use these constantly.", "tip": null, "status": "idea", "order": 20, "product": "Comfy Cubs Muslin Burp Cloths 20x10\" 10 Pack, Baby Burp Cloths - Multi", "price": 19.99, "url": "https://www.amazon.com/dp/B0CLPGQWNB", "rating": "4.8", "reviews": "41,137"}, {"id": "nursing_pillow", "name": "Nursing pillow", "category": "Feeding", "priority": "first-weeks", "qty": "1", "buyQty": 1, "summary": "Props the baby up for feeding so your arms and back don’t do all the work.", "tip": "The Boppy original is about $50 if you prefer the name brand.", "status": "idea", "order": 21, "product": "Nursing Pillow and Positioner, Breastfeeding, Bottle Feeding", "price": 22.99, "url": "https://www.amazon.com/dp/B09P1C3121", "rating": "4.6", "reviews": "1,352"}, {"id": "lanolin", "name": "Nipple cream", "category": "Feeding", "priority": "before", "qty": "1", "buyQty": 1, "summary": "Soothes sore nipples in the first weeks of breastfeeding.", "tip": null, "status": "idea", "order": 22, "product": "Lansinoh Lanolin Nipple Cream, 1.41 Ounces", "price": 9.49, "url": "https://www.amazon.com/dp/B005MI648C", "rating": "4.8", "reviews": "54,940"}, {"id": "nursing_pads", "name": "Nursing pads", "category": "Feeding", "priority": "first-weeks", "qty": "100 ct", "buyQty": 1, "summary": "Disposable pads that catch leaks.", "tip": null, "status": "idea", "order": 23, "product": "Lansinoh Stay Dry Disposable Nursing Pads, 100 Count", "price": 11.49, "url": "https://www.amazon.com/dp/B0070SKP1O", "rating": "4.8", "reviews": "53,256"}, {"id": "milk_bags", "name": "Milk storage bags", "category": "Feeding", "priority": "first-weeks", "qty": "50 ct", "buyQty": 1, "summary": "Freezer bags for pumped milk.", "tip": null, "status": "idea", "order": 24, "product": "Lansinoh Breastmilk Storage Bags, 6 Ounce, 50 Count", "price": 9.34, "url": "https://www.amazon.com/dp/B00198I2WU", "rating": "4.8", "reviews": "94,920"}, {"id": "haakaa", "name": "Silicone milk catcher", "category": "Feeding", "priority": "first-weeks", "qty": "1", "buyQty": 1, "summary": "Collects let-down milk from the other side while nursing.", "tip": null, "status": "idea", "order": 25, "product": "haakaa Manual Breast Pump for Breastfeeding 4oz/100ml", "price": 12.94, "url": "https://www.amazon.com/dp/B07CWK4S5W", "rating": "4.6", "reviews": "96,218"}, {"id": "pacifier", "name": "Pacifiers", "category": "Feeding", "priority": "first-weeks", "qty": "4-pack", "buyQty": 1, "summary": "The hospital-standard newborn pacifier.", "tip": null, "status": "idea", "order": 26, "product": "Philips Avent Soothie Baby Pacifier for 0-3 Months, BPA-Free, 4-Pack, Green", "price": 9.51, "url": "https://www.amazon.com/dp/B07TDN9MKC", "rating": "4.8", "reviews": "21,527"}, {"id": "diapers_nb", "name": "Newborn diapers", "category": "Diapering", "priority": "before", "qty": "84 ct", "buyQty": 1, "summary": "Size 0, up to 10 lb.", "tip": "Buy one box only; most babies outgrow this size in weeks.", "status": "idea", "order": 27, "product": "Pampers Swaddlers Diapers, Size 0 (up to 10 lbs), 84 Count, Fragrance Free, Hypoallergenic, Absorbent…", "price": 27.97, "url": "https://www.amazon.com/dp/B07CVBTN3N", "rating": "4.8", "reviews": "129,117"}, {"id": "diapers_1", "name": "Size 1 diapers", "category": "Diapering", "priority": "before", "qty": "198 ct", "buyQty": 1, "summary": "Size 1, 8–14 lb. This is the size you’ll use most at first.", "tip": null, "status": "idea", "order": 28, "product": "Pampers Swaddlers Diapers, Size 1 (8-14 lbs), 198 Count, Fragrance Free, Hypoallergenic, Absorbent…", "price": 49.77, "url": "https://www.amazon.com/dp/B07DCCP3Y1", "rating": "4.8", "reviews": "129,117"}, {"id": "wipes", "name": "Wipes", "category": "Diapering", "priority": "before", "qty": "720 ct", "buyQty": 1, "summary": "Gentle, unscented wipes, mostly water.", "tip": null, "status": "idea", "order": 29, "product": "WaterWipes Sensitive+ Newborn & Baby Wipes, 3-In-1 Cleans, Cares, Protects, 99.9% Water, Unscented &…", "price": 44.97, "url": "https://www.amazon.com/dp/B008KJEYLO", "rating": "4.7", "reviews": "88,181"}, {"id": "aquaphor", "name": "Healing ointment", "category": "Diapering", "priority": "before", "qty": "7 oz", "buyQty": 1, "summary": "Barrier ointment for diaper area and dry skin.", "tip": null, "status": "idea", "order": 30, "product": "Aquaphor Baby Advanced Therapy Healing Ointment Skin Protectant, 7 OZ", "price": 12.97, "url": "https://www.amazon.com/dp/B0107QP1VE", "rating": "4.9", "reviews": "91,980"}, {"id": "desitin", "name": "Diaper rash cream", "category": "Diapering", "priority": "first-weeks", "qty": "4.8 oz", "buyQty": 1, "summary": "Thick zinc paste for when a rash does show up.", "tip": null, "status": "idea", "order": 31, "product": "Desitin Maximum Strength Diaper Rash Paste, 40% Zinc Oxide, 4.8 oz", "price": 7.97, "url": "https://www.amazon.com/dp/B00ZQXT4EY", "rating": "4.8", "reviews": "51,948"}, {"id": "changing_pad", "name": "Changing pad", "category": "Diapering", "priority": "before", "qty": "1", "buyQty": 1, "summary": "Contoured foam pad with waterproof cover. Works on a dresser top.", "tip": null, "status": "idea", "order": 32, "product": "Serta Foam Contoured Changing Pad with Waterproof Cover", "price": 19.0, "url": "https://www.amazon.com/dp/B08544GH5F", "rating": "4.5", "reviews": "2,027"}, {"id": "changing_covers", "name": "Changing pad covers", "category": "Diapering", "priority": "before", "qty": "2-pack", "buyQty": 1, "summary": "Washable covers so you can swap after messes.", "tip": null, "status": "idea", "order": 33, "product": "Changing Pad Cover for Boys Girls, Soft Unisex Diaper Change Table Sheets", "price": 9.99, "url": "https://www.amazon.com/dp/B09NPS467V", "rating": "4.7", "reviews": "3,042"}, {"id": "diaper_pail", "name": "Diaper pail", "category": "Diapering", "priority": "optional", "qty": "1", "buyQty": 1, "summary": "Odor-sealing steel pail that takes regular trash bags.", "tip": "A small lidded trash can works too.", "status": "idea", "order": 34, "product": "Ubbi Stainless Steel Diaper Pail, No Special Bags, Odor-Locking, White", "price": 69.99, "url": "https://www.amazon.com/dp/B00821FLT4", "rating": "4.6", "reviews": "10,049"}, {"id": "sleepers", "name": "Zip sleepers, 0–3 months", "category": "Clothing", "priority": "before", "qty": "3-pack × 2", "buyQty": 2, "summary": "Zip footie pajamas. Babies basically live in these.", "tip": "Zippers beat snaps at 3 a.m.", "status": "idea", "order": 35, "product": "Simple Joys by Carter's Baby 3-Pack Neutral Sleep and Play", "price": 25.0, "url": "https://www.amazon.com/dp/B075XR7S8V", "rating": "4.8", "reviews": "29,399"}, {"id": "sleepers_nb", "name": "Sleepers, newborn size", "category": "Clothing", "priority": "before", "qty": "4-pack", "buyQty": 1, "summary": "A few newborn-size sleepers for the first weeks.", "tip": "Choose the color set you like on the listing.", "status": "idea", "order": 36, "product": "Gerber Baby Girls 4-Pack Sleep 'N Play Footie", "price": 23.99, "url": "https://www.amazon.com/dp/B07GFTV58Z", "rating": "4.7", "reviews": "72,826"}, {"id": "bodysuits", "name": "Bodysuits", "category": "Clothing", "priority": "before", "qty": "5-pack × 2", "buyQty": 2, "summary": "Short-sleeve onesies for layering. Get 0–3 months.", "tip": null, "status": "idea", "order": 37, "product": "Gerber Baby Boys & Girls 5-Pack Solid Onesies Bodysuits", "price": 11.66, "url": "https://www.amazon.com/dp/B007CRR7WS", "rating": "4.8", "reviews": "58,485"}, {"id": "socks", "name": "Socks", "category": "Clothing", "priority": "before", "qty": "6-pack", "buyQty": 1, "summary": "Terry socks for outings and cool February nights.", "tip": null, "status": "idea", "order": 38, "product": "Gerber Baby Boys & Girls 6-Pack White Terry Socks", "price": 10.95, "url": "https://www.amazon.com/dp/B007C4GHS6", "rating": "4.4", "reviews": "15,198"}, {"id": "hats", "name": "Newborn hats", "category": "Clothing", "priority": "before", "qty": "pack", "buyQty": 1, "summary": "Soft cotton beanies for the first weeks.", "tip": null, "status": "idea", "order": 39, "product": "Bamery Cotton Baby Girl Hat Preemie Boys Beanie Newborn Hospital Hats Winter Infant Hats for Girls", "price": 16.99, "url": "https://www.amazon.com/dp/B088LNP8Y9", "rating": "4.5", "reviews": "933"}, {"id": "mittens", "name": "Scratch mittens", "category": "Clothing", "priority": "before", "qty": "pack", "buyQty": 1, "summary": "Keeps sharp newborn nails off their face.", "tip": null, "status": "idea", "order": 40, "product": "RATIVE Baby Mittens No Scratch, Soft Cotton Newborn Gloves, (0-6 Months)", "price": 8.99, "url": "https://www.amazon.com/dp/B0CWGLZNNQ", "rating": "4.6", "reviews": "35,232"}, {"id": "detergent", "name": "Free & clear detergent", "category": "Clothing", "priority": "before", "qty": "82.5 oz", "buyQty": 1, "summary": "Unscented detergent for washing everything before baby arrives.", "tip": "Any free & clear detergent works; no need for baby-specific soap.", "status": "idea", "order": 41, "product": "all free clear, Original, Liquid Laundry Detergent for Sensitive Skin, Unscented and Hypoallergenic…", "price": 18.68, "url": "https://www.amazon.com/dp/B07GWW54HL", "rating": "4.8", "reviews": "26,732"}, {"id": "tub", "name": "Baby bathtub", "category": "Bath & care", "priority": "first-weeks", "qty": "1", "buyQty": 1, "summary": "Infant tub with newborn sling that grows to a toddler tub.", "tip": "Sponge baths until the umbilical stump falls off.", "status": "idea", "order": 42, "product": "Skip Hop Baby Bath Tub 4-in-1 Grow with Baby Infant to Toddler Bathtub with Supportive Sling and Sit-Up…", "price": 39.99, "url": "https://www.amazon.com/dp/B0DJDQMHFT", "rating": "4.7", "reviews": "13,262"}, {"id": "baby_wash", "name": "Baby wash + lotion", "category": "Bath & care", "priority": "first-weeks", "qty": "2 ct", "buyQty": 1, "summary": "Gentle wash and shampoo plus a lotion for sensitive skin.", "tip": null, "status": "idea", "order": 43, "product": "Cetaphil Baby Wash & Shampoo + Lotion, Sensitive Skin, 13.5oz, 2ct", "price": 14.97, "url": "https://www.amazon.com/dp/B09RKNVYFT", "rating": "4.8", "reviews": "6,782"}, {"id": "hooded_towel", "name": "Hooded towels", "category": "Bath & care", "priority": "first-weeks", "qty": "2-pack", "buyQty": 1, "summary": "Soft muslin towels with a hood to keep the head warm.", "tip": null, "status": "idea", "order": 44, "product": "SWEET DOLPHIN Muslin Hooded Baby Bath Towels - 2 Pack 100% Cotton Towel for Babies, Infants, Toddlers…", "price": 11.99, "url": "https://www.amazon.com/dp/B0D7QC1R35", "rating": "4.8", "reviews": "4,493"}, {"id": "washcloths", "name": "Washcloths", "category": "Bath & care", "priority": "first-weeks", "qty": "12-pack", "buyQty": 1, "summary": "Extra-soft cloths for baths and cleanups.", "tip": null, "status": "idea", "order": 45, "product": "Kyapoo Baby Washcloths 12 Pack 12x12 Inches Microfiber Coral Fleece Extra Absorbent and Soft for Newborns…", "price": 9.99, "url": "https://www.amazon.com/dp/B07KF8FJPV", "rating": "4.8", "reviews": "20,138"}, {"id": "nail_file", "name": "Electric nail file", "category": "Bath & care", "priority": "first-weeks", "qty": "1", "buyQty": 1, "summary": "Gentle file with a light; far less nerve-wracking than clippers.", "tip": null, "status": "idea", "order": 46, "product": "haakaa Electric Baby Nail File, LED Light Baby Nail Trimmer, Green", "price": 18.99, "url": "https://www.amazon.com/dp/B0CN12H8W4", "rating": "4.5", "reviews": "13,807"}, {"id": "thermometer", "name": "Rectal thermometer", "category": "Health", "priority": "before", "qty": "1", "buyQty": 1, "summary": "The accurate way to take a newborn’s temperature.", "tip": "Call the doctor right away for 100.4°F or higher in babies under 3 months.", "status": "idea", "order": 47, "product": "Frida Digital Rectal Thermometer for Babies, Newborns & Infants", "price": 13.97, "url": "https://www.amazon.com/dp/B0823DXJS9", "rating": "4.7", "reviews": "11,812"}, {"id": "nosefrida", "name": "Nasal aspirator", "category": "Health", "priority": "before", "qty": "1", "buyQty": 1, "summary": "Clears a stuffy nose so the baby can eat and sleep.", "tip": null, "status": "idea", "order": 48, "product": "Frida NoseFrida SnotSucker Nasal Aspirator for Baby, 4 Hygiene Filters", "price": 13.62, "url": "https://www.amazon.com/dp/B00171WXII", "rating": "4.7", "reviews": "36,943"}, {"id": "acetaminophen", "name": "Infant acetaminophen", "category": "Health", "priority": "first-weeks", "qty": "2 oz", "buyQty": 1, "summary": "Fever and pain relief for later on.", "tip": "Only with your pediatrician’s go-ahead and dosing. Not for newborns without a doctor’s OK.", "status": "idea", "order": 49, "product": "Amazon Basics Infants' Pain & Fever, Acetaminophen 160 mg per 5 mL, Suspension Liquid, Dye-Free Cherry…", "price": 4.99, "url": "https://www.amazon.com/dp/B087D2J89J", "rating": "4.9", "reviews": "1,542"}, {"id": "gas_relief", "name": "Gas relief tool", "category": "Health", "priority": "optional", "qty": "10 ct", "buyQty": 1, "summary": "Single-use tubes that help a gassy baby.", "tip": null, "status": "idea", "order": 50, "product": "Frida Baby Windi Gas Passer, Baby Gas Relief for Babies & Infants, 10ct", "price": 11.19, "url": "https://www.amazon.com/dp/B007RAGALO", "rating": "4.5", "reviews": "29,858"}, {"id": "bouncer", "name": "Bouncer seat", "category": "Play", "priority": "first-weeks", "qty": "1", "buyQty": 1, "summary": "Vibrating seat with toy bar. Somewhere safe to set the baby down.", "tip": null, "status": "idea", "order": 51, "product": "Bright Starts Baby Bouncer Soothing Vibrations Infant Seat - Removable -Toy Bar, Nonslip Feet, 0-6 Months Up…", "price": 32.99, "url": "https://www.amazon.com/dp/B07R2Y3YLC", "rating": "4.5", "reviews": "13,103"}, {"id": "play_gym", "name": "Play gym", "category": "Play", "priority": "later", "qty": "1", "buyQty": 1, "summary": "Tummy-time mat with a kick piano and hanging toys.", "tip": "Usually used from about 1 month on.", "status": "idea", "order": 52, "product": "Fisher-Price Glow and Grow Kick & Play Piano Gym, Blue", "price": 42.97, "url": "https://www.amazon.com/dp/B0CBQRXNVW", "rating": "4.8", "reviews": "3,497"}, {"id": "peri_bottle", "name": "Peri bottle", "category": "For mom", "priority": "before", "qty": "1", "buyQty": 1, "summary": "Angled squeeze bottle for postpartum care after a vaginal birth.", "tip": "Hospitals often give one; this angled one is nicer.", "status": "idea", "order": 53, "product": "Frida Upside Down Peri Bottle for Postpartum Care, Portable Bidet", "price": 9.48, "url": "https://www.amazon.com/dp/B07TXLZ8MR", "rating": "4.8", "reviews": "29,372"}, {"id": "pp_underwear", "name": "Postpartum underwear", "category": "For mom", "priority": "before", "qty": "8 pc", "buyQty": 1, "summary": "Disposable high-waist underwear for the first weeks.", "tip": null, "status": "idea", "order": 54, "product": "Frida Mom 8pc Postpartum Underwear", "price": 11.89, "url": "https://www.amazon.com/dp/B07THFQS6Y", "rating": "4.7", "reviews": "19,914"}, {"id": "ice_pads", "name": "Ice maxi pads", "category": "For mom", "priority": "before", "qty": "pack", "buyQty": 1, "summary": "Cooling pad and maxi pad in one for postpartum swelling.", "tip": null, "status": "idea", "order": 55, "product": "Frida 2-in-1 Postpartum Pads, Perineal Ice Maxi Pads & Maternity Pad", "price": 18.97, "url": "https://www.amazon.com/dp/B07THDP4KZ", "rating": "4.6", "reviews": "19,285"}, {"id": "tucks", "name": "Witch hazel cooling pads", "category": "For mom", "priority": "before", "qty": "100 ct", "buyQty": 1, "summary": "Soothing pads for postpartum soreness.", "tip": null, "status": "idea", "order": 56, "product": "TUCKS Medicated Cooling Pads, Witch Hazel Hemorrhoid Treatment, 100 Count", "price": 7.68, "url": "https://www.amazon.com/dp/B06ZYLFV8L", "rating": "4.8", "reviews": "62,933"}, {"id": "nursing_bra", "name": "Nursing sleep bra", "category": "For mom", "priority": "first-weeks", "qty": "1–2", "buyQty": 1, "summary": "Soft pull-aside bra for nursing day and night.", "tip": "Wait until late pregnancy to pick a size.", "status": "idea", "order": 57, "product": "Kindred Bravely French Terry Racerback Nursing & Sleep Bra, Maternity Bra", "price": 39.89, "url": "https://www.amazon.com/dp/B0D146T2PF", "rating": "4.0", "reviews": "254"}, {"id": "tumbler", "name": "Big water tumbler", "category": "For mom", "priority": "before", "qty": "1", "buyQty": 1, "summary": "40 oz insulated cup with handle and straw. Nursing makes you very thirsty.", "tip": null, "status": "idea", "order": 58, "product": "Konokyo 40 oz Insulated Tumbler Water Bottle with Handle, Straw Lid", "price": 13.23, "url": "https://www.amazon.com/dp/B0CP7PPVWB", "rating": "4.6", "reviews": "6,152"}, {"id": "cable", "name": "10 ft phone charging cable", "category": "Hospital bag", "priority": "before", "qty": "1", "buyQty": 1, "summary": "Hospital outlets are never near the bed.", "tip": "Check your phone uses USB-C.", "status": "idea", "order": 59, "product": "Anker USB C to USB C Cable, 100W Fast Charging Cable(1-Pack, 10 ft, Black)", "price": 9.99, "url": "https://www.amazon.com/dp/B08PVPTNZL", "rating": "4.7", "reviews": "31,850"}, {"id": "going_home", "name": "Going-home outfit for baby", "category": "Hospital bag", "priority": "before", "qty": "1", "buyQty": 0, "summary": "One newborn and one 0–3 month outfit, since you won’t know the size yet.", "tip": null, "status": "idea", "order": 60, "product": "Use a newborn sleeper from Clothing", "price": null, "url": null, "rating": null, "reviews": null}, {"id": "mom_bag", "name": "Comfy clothes for mom", "category": "Hospital bag", "priority": "before", "qty": "—", "buyQty": 0, "summary": "Pack by week 36.", "tip": null, "status": "idea", "order": 61, "product": "From home: robe, slippers, loose going-home clothes, toiletries", "price": null, "url": null, "rating": null, "reviews": null}, {"id": "paperwork", "name": "ID, insurance card, hospital forms", "category": "Hospital bag", "priority": "before", "qty": "—", "buyQty": 0, "summary": "Pre-registering saves paperwork when you arrive.", "tip": null, "status": "idea", "order": 62, "product": "Pre-register with the hospital before your due date", "price": null, "url": null, "rating": null, "reviews": null}];
+$('#edit').href = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit`;
+$('#xlsx').href = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=xlsx`;
 
-const STORE_KEY = "baby-list-v1";
-function loadLocal() {
-  let saved = {};
-  try { saved = JSON.parse(localStorage.getItem(STORE_KEY) || "{}"); } catch (e) {}
-  const base = SEED.map(i => ({ ...i, ...(saved.edits?.[i.id] || {}) }));
-  return [...base, ...(saved.custom || [])].filter(i => !(saved.removed || []).includes(i.id));
-}
-function saveLocal() {
-  const edits = {}, custom = [];
-  for (const it of items) {
-    if (it.custom) custom.push(it);
-    else edits[it.id] = { status: it.status, myNote: it.myNote || "" };
+let state = { view: 'shop', stage: 'Before birth', status: 'All' };
+try { Object.assign(state, JSON.parse(localStorage.getItem(CACHE + '-ui') || '{}')); } catch {}
+let data = null;
+
+function parseCsv(text) {
+  const rows = []; let row = [], cell = '', q = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (q) { if (c === '"' && text[i + 1] === '"') { cell += '"'; i++; } else if (c === '"') q = false; else cell += c; }
+    else if (c === '"') q = true;
+    else if (c === ',') { row.push(cell); cell = ''; }
+    else if (c === '\n') { row.push(cell); rows.push(row); row = []; cell = ''; }
+    else if (c !== '\r') cell += c;
   }
-  const removed = SEED.map(i => i.id).filter(id => !items.some(x => x.id === id));
-  try { localStorage.setItem(STORE_KEY, JSON.stringify({ edits, custom, removed })); } catch (e) {}
+  if (cell || row.length) { row.push(cell); rows.push(row); }
+  return rows;
 }
-let items = loadLocal();
-let db = { local: true };
-let canWrite = true;
-let catFilter = "All";
-let priFilter = "All";
-const openNotes = new Set();
 
-function el(tag, attrs = {}, ...kids) {
-  const e = document.createElement(tag);
-  for (const [k, v] of Object.entries(attrs)) {
-    if (k === "class") e.className = v;
-    else if (k === "text") e.textContent = v;
-    else if (k.startsWith("on")) e.addEventListener(k.slice(2), v);
-    else if (v !== false && v != null) e.setAttribute(k, v);
+async function fetchTab(name) {
+  const r = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GIDS[name]}`, { cache: 'no-store' });
+  if (!r.ok) throw new Error(name + ': ' + r.status);
+  return parseCsv(await r.text());
+}
+
+async function load() {
+  $('#sub').textContent = 'Loading from the shared Google Sheet…';
+  try {
+    const names = Object.keys(GIDS);
+    const tabs = await Promise.all(names.map(fetchTab));
+    data = shape(Object.fromEntries(names.map((k, i) => [k, tabs[i]])));
+    data.loaded = Date.now();
+    try { localStorage.setItem(CACHE, JSON.stringify(data)); } catch {}
+  } catch (e) {
+    try { data = JSON.parse(localStorage.getItem(CACHE)); } catch {}
+    if (!data) { $('#view').innerHTML = '<div class="status">Couldn’t reach the Google Sheet. Check your connection and tap Refresh.</div>'; $('#sub').textContent = 'Offline'; return; }
+    data.stale = true;
   }
-  for (const k of kids) if (k != null) e.append(k);
-  return e;
+  render();
 }
 
-function buildChips() {
-  const cat = document.getElementById("cat-chips");
-  cat.replaceChildren(...["All", ...CATEGORIES].map(c => el("button", {
-    class: "chip", type: "button", "aria-pressed": String(c === catFilter), text: c,
-    onclick: () => { catFilter = c; buildChips(); render(); },
-  })));
-  const pri = document.getElementById("pri-chips");
-  pri.replaceChildren(...[{ v: "All", label: "Any time" }, ...PRIORITIES].map(p => el("button", {
-    class: "chip", type: "button", "aria-pressed": String(p.v === priFilter), text: p.label,
-    onclick: () => { priFilter = p.v; buildChips(); render(); },
-  })));
-  const fc = document.getElementById("f-cat");
-  if (!fc.options.length) {
-    CATEGORIES.forEach(c => fc.append(el("option", { value: c, text: c })));
-    PRIORITIES.forEach(p => document.getElementById("f-pri").append(el("option", { value: p.v, text: p.label })));
+function shape(raw) {
+  const items = [];
+  for (const stage of STAGES) {
+    let cat = '';
+    raw[stage].slice(1).forEach((r) => {
+      if (!r[1]) { if (r[0]) cat = r[0]; return; }
+      const qty = num(r[3]), price = num(r[5]);
+      items.push({ stage, cat: r[0] || cat, name: r[1], qty, product: r[4], price, total: qty * price,
+        url: r[16] || '', rating: r[8], reviews: r[9], why: r[10], tip: r[11], status: r[12] || 'Idea',
+        notes: r[13], registry: r[15] });
+    });
   }
+  const todo = []; let sec = '';
+  raw['To-do'].slice(3).forEach((r) => {
+    if (r[0] === '' && r[1] && !r[2]) { sec = r[1]; return; }
+    if (r[1]) todo.push({ sec, done: r[0] === 'TRUE', task: r[1], date: r[2], note: r[3] });
+  });
+  const bag = []; sec = '';
+  raw['Hospital bag'].slice(3).forEach((r) => {
+    if (r[0] === '' && r[1]) { sec = r[1]; return; }
+    if (r[1]) bag.push({ sec, done: r[0] === 'TRUE', item: r[1], note: r[2] });
+  });
+  return { items, todo, bag };
 }
 
-function lineTotal(it) { return (Number(it.price) || 0) * (Number(it.buyQty) || 1); }
-
-function renderTotals() {
-  const active = items.filter(i => i.status !== "skip" && i.status !== "got");
-  document.getElementById("t-before").textContent = money(active.filter(i => i.priority === "before").reduce((s, i) => s + lineTotal(i), 0));
-  document.getElementById("t-all").textContent = money(active.reduce((s, i) => s + lineTotal(i), 0));
-  document.getElementById("t-want").textContent = money(items.filter(i => i.status === "want").reduce((s, i) => s + lineTotal(i), 0));
-  document.getElementById("t-got").textContent = items.filter(i => i.status === "got").length + " of " + items.length;
+function setState(patch) {
+  Object.assign(state, patch);
+  try { localStorage.setItem(CACHE + '-ui', JSON.stringify(state)); } catch {}
+  render();
 }
 
-async function setStatus(it, v) {
-  it.status = it.status === v ? "idea" : v;
-  saveLocal(); render();
-}
-
-async function saveNote(it, text) {
-  it.myNote = text; saveLocal();
-}
-
-async function removeItem(it) {
-  items = items.filter(x => x !== it); saveLocal(); render();
-}
-
-function handleWriteError(e) {
-  if (e && e.code === "invalid_argument") { canWrite = false; render(); }
-  const msg = document.getElementById("add-msg");
-  msg.hidden = false;
-  msg.textContent = e && e.code === "invalid_argument"
-    ? "You can view this list but not change it. Ask the owner for edit access."
-    : "That change didn’t save. Check your connection and try again.";
+function stat(label, value, pct) {
+  return `<div class="stat"><span>${label}</span><b>${value}</b>${pct != null ? `<div class="bar"><i style="width:${Math.round(pct * 100)}%"></i></div>` : ''}</div>`;
 }
 
 function itemCard(it) {
-  const statusBox = el("div", { class: "status", role: "group", "aria-label": "Status for " + it.name },
-    ...STATUSES.map(s => el("button", {
-      type: "button", "data-v": s.v, "aria-pressed": String(it.status === s.v), text: s.label,
-      disabled: !canWrite || !db ? "" : false,
-      onclick: () => setStatus(it, s.v),
-    })));
-  const meta = el("div", { class: "meta" },
-    el("span", { class: "pill " + it.priority, text: priLabel(it.priority) }),
-    it.qty ? el("span", { text: "Qty: " + it.qty }) : null,
-    it.rating ? el("span", { class: "num", text: "★ " + it.rating + (it.reviews ? " · " + it.reviews + " ratings" : "") }) : null,
-    canWrite && db ? el("button", { class: "note-btn", type: "button", text: it.myNote ? "Edit note" : "Add note",
-      onclick: () => { openNotes.has(it.id) ? openNotes.delete(it.id) : openNotes.add(it.id); render(); } }) : null,
-    it.custom && canWrite && db ? el("button", { class: "btn ghost", type: "button", text: "Remove", onclick: () => removeItem(it) }) : null,
-  );
-  const product = it.url
-    ? el("a", { class: "item-product", href: it.url, target: "_blank", rel: "noopener", text: it.product || "View on Amazon" })
-    : (it.product ? el("span", { class: "item-product", text: it.product }) : null);
-  const card = el("article", { class: "item", "data-status": it.status || "idea" },
-    el("div", { class: "item-main" },
-      el("div", { class: "item-name", text: it.name }),
-      product,
-      it.summary ? el("div", { class: "item-summary", text: it.summary }) : null,
-      it.tip ? el("div", { class: "item-note", text: it.tip }) : null,
-      it.myNote ? el("div", { class: "item-note", text: "Your note: " + it.myNote }) : null,
-      meta),
-    el("div", { class: "item-side" },
-      el("div", { class: "price num", text: it.price ? price2(it.price) : (it.price === 0 ? "Free" : "—") }),
-      statusBox));
-  if (openNotes.has(it.id)) {
-    const ta = el("textarea", { id: "note-" + it.id, "aria-label": "Note for " + it.name });
-    ta.value = it.myNote || "";
-    card.append(el("div", { class: "note-edit" }, ta,
-      el("button", { class: "btn", type: "button", text: "Save note",
-        onclick: async () => { openNotes.delete(it.id); await saveNote(it, ta.value.trim()); render(); } })));
-  }
-  return card;
+  const link = it.url ? `<a href="${esc(it.url)}" target="_blank" rel="noopener">View on Amazon</a>` : '';
+  const rating = it.rating ? `★ ${esc(it.rating)}${it.reviews ? ` (${esc(it.reviews)})` : ''}` : '';
+  return `<div class="item is-${esc(it.status)}">
+    <div class="top"><div><div class="name">${esc(it.name)}</div><div class="prod">${esc(it.product)}</div></div>
+      <div class="price">${it.price ? money(it.total) : 'Free'}${it.qty > 1 ? `<div class="prod">${it.qty} × ${money(it.price)}</div>` : ''}</div></div>
+    ${it.why ? `<div class="why">${esc(it.why)}</div>` : ''}
+    ${it.tip ? `<div class="tip">💡 ${esc(it.tip)}</div>` : ''}
+    ${it.notes ? `<div class="note">📝 ${esc(it.notes)}</div>` : ''}
+    <div class="meta"><span class="chip ${esc(it.status)}">${esc(it.status)}</span>
+      ${it.registry ? `<span class="chip ${esc(it.registry)}">Registry: ${esc(it.registry)}</span>` : ''}
+      <span>${rating}</span>${link ? `<span>· ${link}</span>` : ''}</div>
+  </div>`;
+}
+
+function grouped(list, key, card) {
+  return [...new Set(list.map((x) => x[key]))]
+    .map((k) => `<h2 class="cat">${esc(k)}</h2>` + list.filter((x) => x[key] === k).map(card).join('')).join('');
 }
 
 function render() {
-  renderTotals();
-  const list = document.getElementById("list");
-  if (!items.length) {
-    list.replaceChildren(el("p", { class: "empty", text: db
-      ? "No items yet. Your list will appear here, grouped by category. Use “Add something” below to start one."
-      : "This list loads inside Claude. Open it from your Claude app or claude.ai to see and update it." }));
-    return;
-  }
-  const shown = items.filter(i => (catFilter === "All" || i.category === catFilter) && (priFilter === "All" || i.priority === priFilter));
-  if (!shown.length) { list.replaceChildren(el("p", { class: "empty", text: "Nothing matches these filters." })); return; }
-  const sections = [];
-  for (const cat of CATEGORIES) {
-    const group = shown.filter(i => i.category === cat).sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
-    if (!group.length) continue;
-    const sum = group.filter(i => i.status !== "skip" && i.status !== "got").reduce((s, i) => s + lineTotal(i), 0);
-    sections.push(el("section", { class: "section" },
-      el("div", { class: "section-head" }, el("h2", { text: cat }), el("span", { class: "num", text: group.length + " items · " + money(sum) + " left" })),
-      el("div", { class: "items" }, ...group.map(itemCard))));
-  }
-  list.replaceChildren(...sections);
-}
+  $('#tabs').innerHTML = VIEWS.map(([k, l]) => `<button role="tab" aria-selected="${state.view === k}" data-view="${k}">${l}</button>`).join('');
+  if (!data) return;
+  $('#sub').textContent = (data.stale ? 'Offline — showing the copy from ' : 'Updated ')
+    + new Date(data.loaded).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+  const active = (x) => x.status !== 'Skip';
+  const its = data.items;
 
-document.getElementById("add-form").addEventListener("submit", async ev => {
-  ev.preventDefault();
-  const msg = document.getElementById("add-msg");
-  if (!db || !canWrite) { msg.hidden = false; msg.textContent = "Adding items works when this list is open in Claude with edit access."; return; }
-  const name = document.getElementById("f-name").value.trim();
-  if (!name) return;
-  const price = parseFloat(document.getElementById("f-price").value);
-  const url = document.getElementById("f-url").value.trim();
-  try {
-    items.push({ id: "c" + Date.now(),
-      name, category: document.getElementById("f-cat").value, priority: document.getElementById("f-pri").value,
-      price: isNaN(price) ? null : price, url: url || null, status: "want", custom: true, order: 900,
+  if (state.view === 'shop') {
+    const inStage = state.stage === 'All' ? its : its.filter((x) => x.stage === state.stage);
+    const cost = inStage.filter(active).reduce((s, x) => s + x.total, 0);
+    const left = inStage.filter((x) => active(x) && x.status !== 'Got').reduce((s, x) => s + x.total, 0);
+    const got = inStage.filter((x) => x.status === 'Got').length, need = inStage.filter(active).length;
+    $('#stats').innerHTML = stat('Total' + (state.stage === 'All' ? '' : ' · ' + state.stage), money(cost))
+      + stat('Still to buy', money(left)) + stat('Have', `${got} of ${need}`, need ? got / need : 0);
+    $('#filters').innerHTML = `<div class="filters">${[...STAGES, 'All'].map((s) => `<button aria-pressed="${state.stage === s}" data-stage="${s}">${s}</button>`).join('')}</div>
+      <div class="filters">${['All', 'Idea', 'Want', 'Got', 'Skip'].map((s) => `<button aria-pressed="${state.status === s}" data-status="${s}">${s === 'All' ? 'Any status' : s}</button>`).join('')}</div>`;
+    const list = inStage.filter((x) => state.status === 'All' || x.status === state.status);
+    $('#view').innerHTML = list.length ? grouped(list, state.stage === 'All' ? 'stage' : 'cat', itemCard) : '<div class="empty">Nothing here.</div>';
+  }
+
+  if (state.view === 'registry') {
+    const reg = its.filter((x) => x.registry);
+    const want = reg.filter((x) => x.registry === 'Want'), added = reg.filter((x) => x.registry === 'Added');
+    const disc = reg.filter((x) => active(x) && x.status !== 'Got').reduce((s, x) => s + x.total, 0) * 0.15;
+    $('#stats').innerHTML = stat('To add', want.length) + stat('Added', `${added.length} of ${reg.length}`, reg.length ? added.length / reg.length : 0)
+      + stat('Est. 15% completion discount', money(disc));
+    $('#filters').innerHTML = '';
+    $('#view').innerHTML = reg.length
+      ? (want.length ? '<h2 class="cat">To add — tap the link, then “Add to Baby Registry”</h2>' + want.map(itemCard).join('') : '')
+        + (added.length ? '<h2 class="cat">Already on the registry</h2>' + added.map(itemCard).join('') : '')
+      : '<div class="empty">Nothing marked yet. In the sheet, set an item’s Registry column to “Want”.</div>';
+  }
+
+  if (state.view === 'todo') {
+    const done = data.todo.filter((x) => x.done).length;
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const next = data.todo.find((x) => !x.done);
+    $('#stats').innerHTML = stat('Done', `${done} of ${data.todo.length}`, data.todo.length ? done / data.todo.length : 0)
+      + (next ? stat('Next up', `<span style="font-size:15px">${esc(next.task)}</span>`) : '');
+    $('#filters').innerHTML = '';
+    $('#view').innerHTML = grouped(data.todo, 'sec', (x) => {
+      const due = new Date(x.date), over = !x.done && !isNaN(due) && due < today;
+      return `<div class="check ${x.done ? 'done' : ''} ${over ? 'overdue' : ''}"><div class="box">${x.done ? '✓' : ''}</div>
+        <div><div class="t">${esc(x.task)}</div>${x.note ? `<div class="d">${esc(x.note)}</div>` : ''}</div>
+        <div class="when">${isNaN(due) ? esc(x.date) : due.toLocaleDateString([], { month: 'short', day: 'numeric' })}</div></div>`;
     });
-    saveLocal(); render();
-    ev.target.reset();
-    msg.hidden = false; msg.textContent = "Added “" + name + "”.";
-  } catch (e) { handleWriteError(e); }
-});
+  }
 
-// Spreadsheet export: built from the live list, so it carries current statuses and notes.
-function loadSheetJS() {
-  if (window.XLSX) return Promise.resolve();
-  return new Promise((resolve, reject) => {
-    const s = document.createElement("script");
-    s.src = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
-    s.onload = resolve; s.onerror = reject;
-    document.head.append(s);
-  });
-}
-const STATUS_WORD = { idea: "Idea", want: "Want", got: "Got", skip: "Skip" };
-function buildWorkbook() {
-  const X = window.XLSX;
-  const head = ["Category", "Item", "When", "Pack / size", "# to buy", "Price each", "Line total", "Status", "Amazon product", "Link", "Rating", "Ratings count", "What it is", "Tip", "Our notes"];
-  const sorted = [...items].sort((a, b) => CATEGORIES.indexOf(a.category) - CATEGORIES.indexOf(b.category) || (a.order ?? 999) - (b.order ?? 999));
-  const aoa = [head, ...sorted.map(i => [i.category, i.name, priLabel(i.priority), i.qty || "", Number(i.buyQty ?? 1), i.price ?? "", "", STATUS_WORD[i.status] || "Idea", i.product || "", i.url || "", i.rating ? Number(i.rating) : "", i.reviews ? Number(String(i.reviews).replace(/,/g, "")) : "", i.summary || "", i.tip || "", i.myNote || ""])];
-  const ws = X.utils.aoa_to_sheet(aoa);
-  sorted.forEach((_, k) => {
-    const r = k + 2;
-    ws["G" + r] = { t: "n", f: `IF(F${r}="","",E${r}*F${r})` };
-    ["F", "G"].forEach(c => { if (ws[c + r]) ws[c + r].z = "$#,##0.00"; });
-    if (sorted[k].url) ws["J" + r].l = { Target: sorted[k].url };
-  });
-  ws["!cols"] = [14, 30, 16, 12, 8, 11, 11, 9, 48, 30, 7, 12, 50, 44, 30].map(w => ({ wch: w }));
-  ws["!autofilter"] = { ref: "A1:O" + (sorted.length + 1) };
-  const last = sorted.length + 1;
-  const R = c => `'Shopping List'!$${c}$2:$${c}$${last}`;
-  const sum = [["Baby Arrival List"], ["Totals update as you change Status and # to buy on the Shopping List tab."], [], ["When", "Still to buy", "Marked Want", "Already got", "Items"]];
-  PRIORITIES.forEach(p => sum.push([p.label]));
-  sum.push(["Total"]);
-  const ss = X.utils.aoa_to_sheet(sum);
-  PRIORITIES.forEach((p, k) => {
-    const r = k + 5;
-    ss["B" + r] = { t: "n", f: `SUMIFS(${R("G")},${R("C")},$A${r},${R("H")},"<>Skip",${R("H")},"<>Got")`, z: "$#,##0" };
-    ss["C" + r] = { t: "n", f: `SUMIFS(${R("G")},${R("C")},$A${r},${R("H")},"Want")`, z: "$#,##0" };
-    ss["D" + r] = { t: "n", f: `SUMIFS(${R("G")},${R("C")},$A${r},${R("H")},"Got")`, z: "$#,##0" };
-    ss["E" + r] = { t: "n", f: `COUNTIFS(${R("C")},$A${r})` };
-  });
-  const tr = 5 + PRIORITIES.length;
-  ["B", "C", "D", "E"].forEach(c => { ss[c + tr] = { t: "n", f: `SUM(${c}5:${c}${tr - 1})`, z: c === "E" ? "0" : "$#,##0" }; });
-  ss["!ref"] = "A1:E" + tr;
-  ss["!cols"] = [{ wch: 22 }, { wch: 14 }, { wch: 14 }, { wch: 14 }, { wch: 8 }];
-  const wb = X.utils.book_new();
-  X.utils.book_append_sheet(wb, ws, "Shopping List");
-  X.utils.book_append_sheet(wb, ss, "Summary");
-  return X.write(wb, { bookType: "xlsx", type: "array" });
+  if (state.view === 'bag') {
+    const done = data.bag.filter((x) => x.done).length;
+    $('#stats').innerHTML = stat('Packed', `${done} of ${data.bag.length}`, data.bag.length ? done / data.bag.length : 0) + stat('Pack by', '36 weeks');
+    $('#filters').innerHTML = '';
+    $('#view').innerHTML = grouped(data.bag, 'sec', (x) => `<div class="check ${x.done ? 'done' : ''}"><div class="box">${x.done ? '✓' : ''}</div>
+      <div><div class="t">${esc(x.item)}</div>${x.note ? `<div class="d">${esc(x.note)}</div>` : ''}</div></div>`);
+  }
 }
 
-buildChips();
-render();
-
-document.getElementById("dl-btn").addEventListener("click", async () => {
-  const note = document.getElementById("dl-note");
-  try {
-    await loadSheetJS();
-    window.XLSX.writeFile(arrayToBook(), "Baby-Arrival-List.xlsx");
-  } catch (e) { note.textContent = "The download didn’t start. Check your connection and try again."; }
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.view) setState({ view: b.dataset.view });
+  else if (b.dataset.stage) setState({ stage: b.dataset.stage });
+  else if (b.dataset.status) setState({ status: b.dataset.status });
+  else if (b.id === 'refresh') load();
 });
-function arrayToBook() { return window.XLSX.read(buildWorkbook(), { type: "array" }); }
+document.addEventListener('visibilitychange', () => { if (!document.hidden && data && Date.now() - data.loaded > 60000) load(); });
+
+try { data = JSON.parse(localStorage.getItem(CACHE)); if (data) render(); } catch {}
+load();
 </script>
-
 </body>
 </html>

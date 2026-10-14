@@ -3,3 +3,12 @@ build_xlsx.py
 scrape.js
 product.js
 __pycache__/
+.sheet-token
+.sheet-url
+sheet-sync.js
+apps-script.gs
+price-history.json
+price-watch.log
+.sheet-gids.json
+Baby-Arrival-List.xlsx
+items.json

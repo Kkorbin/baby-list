@@ -1,8 +1,8 @@
-# Baby Arrival List
+# Baby List
 
-Our shopping list for the February 2027 arrival: what to buy, when, and the Amazon picks we're considering, with prices checked October 2026.
+A phone-friendly, read-only view of our shared Google Sheet:
+https://kkorbin.github.io/baby-list/
 
-- **Site:** https://kkorbin.github.io/baby-list/
-- **Spreadsheet:** [Baby-Arrival-List.xlsx](Baby-Arrival-List.xlsx) (dropdowns, totals, and tips)
-
-Choices you make on the site (Want / Got / Skip, notes) are saved in your browser on that device.
+The page loads the sheet live each time it opens. To change anything (status, notes, registry,
+to-dos, the hospital bag), edit the Google Sheet, then tap Refresh on the page.
+Prices in the sheet are updated from Amazon every Sunday by a script on our Raspberry Pi.
