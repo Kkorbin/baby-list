@@ -143,7 +143,7 @@ function shape(raw) {
       const qty = num(r[3]), price = num(r[5]);
       items.push({ stage, cat: r[0] || cat, name: r[1], qty, product: r[4], price, total: qty * price,
         url: r[16] || '', rating: r[8], reviews: r[9], why: r[10], tip: r[11], status: r[12] || 'Idea',
-        notes: r[13], registry: r[15], img: /^https:\/\/m\.media-amazon\.com\//.test(r[17] || '') ? r[17] : '' });
+        notes: r[13], registry: r[15], img: /^https:\/\/(m\.media-amazon\.com|images\.babylist\.com)\//.test(r[17] || '') ? r[17] : '' });
     });
   }
   const todo = []; let sec = '';
