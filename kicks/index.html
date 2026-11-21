@@ -43,8 +43,12 @@ h1{font-size:22px;margin:0}
 .day{font-size:13px;font-weight:700;color:var(--mut);margin:18px 2px 0;text-transform:uppercase;letter-spacing:.05em}
 .empty{color:var(--mut);text-align:center;margin:40px 0}
 .export{display:block;width:100%;margin:14px 0;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:15px}
+.install{position:relative;margin:12px 0 0;padding:12px 38px 12px 14px;border-radius:12px;background:var(--sage2);font-size:15px;line-height:1.4}
+.install button{position:absolute;right:8px;top:8px;border:0;background:none;color:var(--ink);font-size:16px}
+.sh{display:inline-block;padding:0 4px;border:1px solid var(--ink);border-radius:5px;font-size:12px}
 .hide{display:none}
 </style></head><body>
+<div id="install" class="install hide">To install: tap <b>Share</b> <span class="sh">⬆︎</span> below, then <b>Add to Home Screen</b>.<button id="xi">✕</button></div>
 <header><h1>👣 Kicks</h1><div class="tabs"><button id="tCount" class="on">Count</button><button id="tHist">History</button></div></header>
 
 <section id="vCount">
@@ -56,7 +60,7 @@ h1{font-size:22px;margin:0}
   <button id="tap">Tap for each kick<small id="tapSub">a session starts with the first tap</small></button>
   <div class="row"><button id="undo" disabled>Undo last</button><button id="end" class="end" disabled>End &amp; save</button></div>
   <input id="note" class="note" placeholder="Note (optional): after dinner, lying on left side…">
-  <p class="hint">Every tap counts as a kick. No minimum and no cool-down. Sessions save however many kicks you log. Your data stays on this phone.<br>If movement seems less than usual, call your OB or L&amp;D right away.</p>
+  <p class="hint">Every tap counts. Sessions save however many kicks you log. Your data stays on this phone.</p>
 </section>
 
 <section id="vHist" class="hide">
@@ -121,6 +125,9 @@ $('csv').onclick=async()=>{
   if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:'Kick counts'});return}catch(e){}}
   const a=document.createElement('a');a.href=URL.createObjectURL(file);a.download='kicks.csv';a.click();
 };
+const standalone=window.navigator.standalone||matchMedia('(display-mode: standalone)').matches;
+if(!standalone&&!localStorage.getItem('kicks.hideInstall')) $('install').classList.remove('hide');
+$('xi').onclick=()=>{$('install').classList.add('hide');localStorage.setItem('kicks.hideInstall','1')};
 if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
 if(navigator.storage&&navigator.storage.persist) navigator.storage.persist();
 render();
