@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Kicks">
+<meta name="theme-color" content="#f6f3ee">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="manifest" href="manifest.json">
+<title>Kicks</title>
+<style>
+:root{--bg:#f6f3ee;--card:#fff;--ink:#3b3832;--mut:#8a8478;--sage:#7d8b6a;--sage2:#dfe5d4;--line:#e8e2d7;--red:#b4553f}
+@media (prefers-color-scheme:dark){:root{--bg:#1d1c1a;--card:#2a2926;--ink:#eeeae2;--mut:#a39d91;--sage:#9fb08a;--sage2:#3a4232;--line:#3a3833;--red:#e08a73}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,system-ui,sans-serif}
+body{padding:env(safe-area-inset-top) 16px calc(env(safe-area-inset-bottom) + 16px)}
+header{display:flex;justify-content:space-between;align-items:center;padding:14px 2px 6px}
+h1{font-size:22px;margin:0}
+.tabs button{background:none;border:0;color:var(--mut);font-size:16px;font-weight:600;padding:6px 8px}
+.tabs button.on{color:var(--sage)}
+.stats{display:flex;gap:10px;margin:10px 0}
+.stat{flex:1;background:var(--card);border-radius:14px;padding:12px;text-align:center}
+.stat b{display:block;font-size:30px;font-variant-numeric:tabular-nums}
+.stat span{font-size:12px;color:var(--mut)}
+#tap{display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;aspect-ratio:1/1;max-height:52vh;margin:8px auto;border:0;border-radius:50%;background:var(--sage);color:#fff;font-size:26px;font-weight:700;box-shadow:0 8px 24px #0002;transition:transform .06s;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+#tap small{font-size:15px;font-weight:500;opacity:.85;margin-top:6px}
+#tap.hit{transform:scale(.96)}
+.row{display:flex;gap:10px;margin-top:8px}
+.row button{flex:1;padding:14px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:16px;font-weight:600}
+.row button.end{background:var(--sage2);border-color:transparent}
+.row button:disabled{opacity:.4}
+.note{width:100%;margin-top:10px;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:16px}
+.hint{font-size:12.5px;color:var(--mut);text-align:center;margin:10px 4px;line-height:1.4}
+.sess{background:var(--card);border-radius:14px;padding:12px 14px;margin:10px 0}
+.sess .top{display:flex;justify-content:space-between;align-items:baseline}
+.sess .n{font-size:22px;font-weight:700}
+.sess .meta{font-size:13px;color:var(--mut);margin-top:3px}
+.sess .times{font-size:12.5px;color:var(--mut);margin-top:8px;line-height:1.6;display:none;font-variant-numeric:tabular-nums}
+.sess.open .times{display:block}
+.sess .del{color:var(--red);background:none;border:0;font-size:13px;padding:6px 0 0}
+.day{font-size:13px;font-weight:700;color:var(--mut);margin:18px 2px 0;text-transform:uppercase;letter-spacing:.05em}
+.empty{color:var(--mut);text-align:center;margin:40px 0}
+.export{display:block;width:100%;margin:14px 0;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:15px}
+.hide{display:none}
+</style></head><body>
+<header><h1>👣 Kicks</h1><div class="tabs"><button id="tCount" class="on">Count</button><button id="tHist">History</button></div></header>
+
+<section id="vCount">
+  <div class="stats">
+    <div class="stat"><b id="sN">0</b><span>kicks</span></div>
+    <div class="stat"><b id="sT">0:00</b><span>elapsed</span></div>
+    <div class="stat"><b id="sL">–</b><span>since last</span></div>
+  </div>
+  <button id="tap">Tap for each kick<small id="tapSub">a session starts with the first tap</small></button>
+  <div class="row"><button id="undo" disabled>Undo last</button><button id="end" class="end" disabled>End &amp; save</button></div>
+  <input id="note" class="note" placeholder="Note (optional): after dinner, lying on left side…">
+  <p class="hint">Every tap counts as a kick. No minimum and no cool-down. Sessions save however many kicks you log. Your data stays on this phone.<br>If movement seems less than usual, call your OB or L&amp;D right away.</p>
+</section>
+
+<section id="vHist" class="hide">
+  <div id="list"></div>
+  <button id="csv" class="export">Export / share as CSV</button>
+</section>
+
+<script>
+const K='kicks.v1';
+const load=()=>{try{return JSON.parse(localStorage.getItem(K))||{sessions:[],cur:null}}catch(e){return {sessions:[],cur:null}}};
+let db=load(); const save=()=>localStorage.setItem(K,JSON.stringify(db));
+const $=id=>document.getElementById(id);
+const fmtDur=ms=>{const s=Math.max(0,Math.round(ms/1000)),h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return h?`${h}:${String(m).padStart(2,'0')}:${String(x).padStart(2,'0')}`:`${m}:${String(x).padStart(2,'0')}`};
+const fmtT=t=>new Date(t).toLocaleTimeString([], {hour:'numeric',minute:'2-digit',second:'2-digit'});
+function render(){
+  const c=db.cur, n=c?c.taps.length:0;
+  $('sN').textContent=n;
+  $('sT').textContent=c?fmtDur(Date.now()-c.start):'0:00';
+  $('sL').textContent=c&&n?fmtDur(Date.now()-c.taps[n-1]):'–';
+  $('undo').disabled=!n; $('end').disabled=!c;
+  $('tapSub').textContent=c?`started ${fmtT(c.start)}`:'a session starts with the first tap';
+  if(document.activeElement!==$('note')) $('note').value=c?(c.note||''):'';
+}
+$('tap').addEventListener('pointerdown',e=>{
+  e.preventDefault(); const now=Date.now();
+  if(!db.cur) db.cur={start:now,taps:[],note:''};
+  db.cur.taps.push(now); save(); render();
+  const b=$('tap'); b.classList.add('hit'); setTimeout(()=>b.classList.remove('hit'),90);
+  if(navigator.vibrate) navigator.vibrate(15);
+});
+$('undo').onclick=()=>{ if(db.cur&&db.cur.taps.length){db.cur.taps.pop(); if(!db.cur.taps.length) db.cur=null; save(); render();} };
+$('note').oninput=()=>{ if(!db.cur) db.cur={start:Date.now(),taps:[],note:''}; db.cur.note=$('note').value; save(); render(); };
+$('end').onclick=()=>{ if(!db.cur) return; const c=db.cur; c.end=c.taps.length?Math.max(c.taps[c.taps.length-1],Date.now()):Date.now(); db.sessions.unshift(c); db.cur=null; save(); render(); };
+setInterval(()=>{ if(db.cur) render(); },1000);
+
+function hist(){
+  const L=$('list'); L.innerHTML='';
+  if(!db.sessions.length){L.innerHTML='<p class="empty">No saved sessions yet.</p>';return}
+  let lastDay='';
+  db.sessions.forEach((s,i)=>{
+    const d=new Date(s.start).toLocaleDateString([], {weekday:'short',month:'short',day:'numeric'});
+    if(d!==lastDay){const h=document.createElement('div');h.className='day';h.textContent=d;L.appendChild(h);lastDay=d}
+    const n=s.taps.length, dur=(s.end||s.start)-s.start;
+    const t10=n>=10?fmtDur(s.taps[9]-s.start):null;
+    const el=document.createElement('div'); el.className='sess';
+    el.innerHTML=`<div class="top"><span class="n">${n} kick${n===1?'':'s'}</span><span class="meta">${fmtT(s.start)}</span></div>
+      <div class="meta">${fmtDur(dur)} long${t10?` · 10 kicks in ${t10}`:''}${s.note?` · ${s.note.replace(/</g,'&lt;')}`:''}</div>
+      <div class="times">${s.taps.map((t,j)=>`${j+1}. ${fmtT(t)}`).join('<br>')}</div>
+      <button class="del">Delete</button>`;
+    el.onclick=e=>{ if(e.target.classList.contains('del')) return; el.classList.toggle('open'); };
+    el.querySelector('.del').onclick=()=>{ if(confirm('Delete this session?')){db.sessions.splice(i,1);save();hist();} };
+    L.appendChild(el);
+  });
+}
+$('tCount').onclick=()=>{$('vCount').classList.remove('hide');$('vHist').classList.add('hide');$('tCount').classList.add('on');$('tHist').classList.remove('on')};
+$('tHist').onclick=()=>{hist();$('vHist').classList.remove('hide');$('vCount').classList.add('hide');$('tHist').classList.add('on');$('tCount').classList.remove('on')};
+$('csv').onclick=async()=>{
+  const rows=[['session_start','kick_number','kick_time','session_kicks','note']];
+  db.sessions.slice().reverse().forEach(s=>s.taps.forEach((t,j)=>rows.push([new Date(s.start).toISOString(),j+1,new Date(t).toISOString(),s.taps.length,(s.note||'').replace(/"/g,'""')])));
+  const csv=rows.map(r=>r.map(x=>`"${x}"`).join(',')).join('\n');
+  const file=new File([csv],'kicks.csv',{type:'text/csv'});
+  if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:'Kick counts'});return}catch(e){}}
+  const a=document.createElement('a');a.href=URL.createObjectURL(file);a.download='kicks.csv';a.click();
+};
+if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+if(navigator.storage&&navigator.storage.persist) navigator.storage.persist();
+render();
+</script>
+</body></html>
