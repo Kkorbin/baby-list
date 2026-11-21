@@ -102,7 +102,7 @@ document.querySelectorAll('#tap,.ty').forEach(b=>b.addEventListener('pointerdown
 }));
 $('undo').onclick=()=>{ if(db.cur&&db.cur.taps.length){db.cur.taps.pop(); if(!db.cur.taps.length) db.cur=null; save(); render();} };
 $('note').oninput=()=>{ if(!db.cur) db.cur={start:Date.now(),taps:[],note:''}; db.cur.note=$('note').value; save(); render(); };
-$('end').onclick=()=>{ if(!db.cur) return; const c=db.cur; c.end=c.taps.length?Math.max(tt(c.taps[c.taps.length-1]),Date.now()):Date.now(); db.sessions.unshift(c); db.cur=null; save(); render(); };
+$('end').onclick=()=>{ if(!db.cur) return; const c=db.cur; c.end=c.taps.length?tt(c.taps[c.taps.length-1]):Date.now(); db.sessions.unshift(c); db.cur=null; save(); render(); };
 setInterval(()=>{ if(db.cur) render(); },1000);
 
 function hist(){
