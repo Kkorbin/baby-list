@@ -24,7 +24,8 @@ h1{font-size:22px;margin:0}
 .stat{flex:1;background:var(--card);border-radius:14px;padding:12px;text-align:center}
 .stat b{display:block;font-size:30px;font-variant-numeric:tabular-nums}
 .stat span{font-size:12px;color:var(--mut)}
-#tap{display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;aspect-ratio:1/1;max-height:42vh;margin:8px auto;border:0;border-radius:50%;background:var(--sage);color:#fff;font-size:26px;font-weight:700;box-shadow:0 8px 24px #0002;transition:transform .06s;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+.tapwrap{width:100%;aspect-ratio:1/1;max-height:42vh;margin:8px auto;display:flex;align-items:center;justify-content:center}
+#tap{display:flex;flex-direction:column;align-items:center;justify-content:center;height:80%;aspect-ratio:1/1;width:auto;margin:0;border:0;border-radius:50%;background:var(--sage);color:#fff;font-size:26px;font-weight:700;box-shadow:0 8px 24px #0002;transition:transform .06s;touch-action:manipulation;user-select:none;-webkit-user-select:none}
 #tap small{font-size:15px;font-weight:500;opacity:.85;margin-top:6px}
 #tap.hit,.ty.hit{transform:scale(.96)}
 .types{display:flex;gap:10px}
@@ -61,7 +62,7 @@ h1{font-size:22px;margin:0}
     <div class="stat"><b id="sT">0:00</b><span>elapsed</span></div>
     <div class="stat"><b id="sL">–</b><span>since last</span></div>
   </div>
-  <button id="tap" data-k="kick">Kick<small id="tapSub">tap for each one</small></button>
+  <div class="tapwrap"><button id="tap" data-k="kick">Kick<small id="tapSub">tap for each one</small></button></div>
   <div class="types"><button class="ty" data-k="flutter">🦋 Flutter</button><button class="ty" data-k="unsure">〰️ Not sure</button></div>
   <div id="mix" class="mix"></div>
   <div class="row"><button id="undo" disabled>Undo last</button><button id="end" class="end" disabled>End &amp; save</button></div>
