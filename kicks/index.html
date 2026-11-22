@@ -91,21 +91,27 @@ function render(){
   $('sT').textContent=c?fmtDur(Date.now()-c.start):'0:00';
   $('sL').textContent=c&&n?fmtDur(Date.now()-tt(c.taps[n-1])):'–';
   $('mix').textContent=c&&n?mixStr(c.taps):'';
-  $('undo').disabled=!n; $('end').disabled=!c;
+  const reopen=!c&&canReopen();
+  $('undo').disabled=!n&&!reopen; $('undo').textContent=reopen?'Reopen last session':'Undo last'; $('end').disabled=!c;
   $('tapSub').textContent=c?`started ${fmtT(c.start)}`:'tap for each one';
   if(document.activeElement!==$('note')) $('note').value=c?(c.note||''):'';
 }
 document.querySelectorAll('#tap,.ty').forEach(b=>b.addEventListener('pointerdown',e=>{
   e.preventDefault(); const now=Date.now();
   if(!db.cur) db.cur={start:now,taps:[],note:''};
+  if(!db.cur.taps.length) db.cur.start=now;  // a note typed first shouldn't start the clock
   db.cur.taps.push({t:now,k:b.dataset.k}); save(); render();
   b.classList.add('hit'); setTimeout(()=>b.classList.remove('hit'),90);
   if(navigator.vibrate) navigator.vibrate(15);
 }));
-$('undo').onclick=()=>{ if(db.cur&&db.cur.taps.length){db.cur.taps.pop(); if(!db.cur.taps.length) db.cur=null; save(); render();} };
+$('undo').onclick=()=>{
+  if(db.cur&&db.cur.taps.length){ db.cur.taps.pop(); if(!db.cur.taps.length&&!db.cur.note) db.cur=null; }
+  else if(!db.cur&&canReopen()){ db.cur=db.sessions.shift(); delete db.cur.end; delete db.cur.savedAt; }
+  save(); render(); };
+const canReopen=()=>db.sessions.length&&db.sessions[0].savedAt&&Date.now()-db.sessions[0].savedAt<10*60*1000;
 $('note').oninput=()=>{ if(!db.cur) db.cur={start:Date.now(),taps:[],note:''}; db.cur.note=$('note').value; save(); render(); };
-$('end').onclick=()=>{ if(!db.cur) return; const c=db.cur; c.end=c.taps.length?tt(c.taps[c.taps.length-1]):Date.now(); db.sessions.unshift(c); db.cur=null; save(); render(); };
-setInterval(()=>{ if(db.cur) render(); },1000);
+$('end').onclick=()=>{ if(!db.cur) return; const c=db.cur; c.end=c.taps.length?tt(c.taps[c.taps.length-1]):c.start; c.savedAt=Date.now(); db.sessions.unshift(c); db.cur=null; save(); render(); };
+setInterval(render,1000);
 
 function hist(){
   const L=$('list'); L.innerHTML='';
@@ -129,9 +135,17 @@ function hist(){
 $('tCount').onclick=()=>{$('vCount').classList.remove('hide');$('vHist').classList.add('hide');$('tCount').classList.add('on');$('tHist').classList.remove('on')};
 $('tHist').onclick=()=>{hist();$('vHist').classList.remove('hide');$('vCount').classList.add('hide');$('tHist').classList.add('on');$('tCount').classList.remove('on')};
 $('csv').onclick=async()=>{
-  const rows=[['session_start','number','time','type','session_total','note']];
-  db.sessions.slice().reverse().forEach(s=>s.taps.forEach((t,j)=>rows.push([new Date(s.start).toISOString(),j+1,new Date(tt(t)).toISOString(),LBL[tk(t)],s.taps.length,(s.note||'').replace(/"/g,'""')])));
-  const csv=rows.map(r=>r.map(x=>`"${x}"`).join(',')).join('\n');
+  const loc=t=>{const d=new Date(t);return d.toLocaleDateString('en-US')+' '+d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',second:'2-digit'})};
+  const rows=[['session_start','session_end','session_length','status','number','time','type','session_total','note']];
+  const all=db.sessions.slice().reverse().map(x=>({...x,status:'saved'}));
+  if(db.cur) all.push({...db.cur,end:db.cur.taps.length?tt(db.cur.taps[db.cur.taps.length-1]):db.cur.start,status:'in progress'});
+  all.forEach(x=>{
+    const base=[loc(x.start),loc(x.end||x.start),fmtDur((x.end||x.start)-x.start),x.status];
+    const note=(x.note||'').replace(/"/g,'""');
+    if(!x.taps.length) rows.push([...base,'','','',0,note]);
+    x.taps.forEach((t,j)=>rows.push([...base,j+1,loc(tt(t)),LBL[tk(t)],x.taps.length,note]));
+  });
+  const csv=rows.map(r=>r.map(v=>`"${v}"`).join(',')).join('\n');
   const file=new File([csv],'kicks.csv',{type:'text/csv'});
   if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:'Kick counts'});return}catch(e){}}
   const a=document.createElement('a');a.href=URL.createObjectURL(file);a.download='kicks.csv';a.click();
