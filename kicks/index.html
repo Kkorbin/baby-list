@@ -15,7 +15,7 @@
 @media (prefers-color-scheme:dark){:root{--bg:#1d1c1a;--card:#2a2926;--ink:#eeeae2;--mut:#a39d91;--sage:#9fb08a;--sage2:#3a4232;--line:#3a3833;--red:#e08a73}}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,system-ui,sans-serif}
-body{padding:env(safe-area-inset-top) 16px calc(env(safe-area-inset-bottom) + 16px);display:flex;flex-direction:column;min-height:100vh;min-height:100dvh}
+body{padding:env(safe-area-inset-top) 16px calc(env(safe-area-inset-bottom) + 16px)}
 header{display:flex;justify-content:space-between;align-items:center;padding:14px 2px 6px}
 h1{font-size:22px;margin:0;display:flex;align-items:center;gap:6px}
 .feet{width:30px;height:30px;color:var(--sage)}
@@ -51,7 +51,7 @@ h1{font-size:22px;margin:0;display:flex;align-items:center;gap:6px}
 .install{position:relative;margin:12px 0 0;padding:12px 38px 12px 14px;border-radius:12px;background:var(--sage2);font-size:15px;line-height:1.4}
 .install button{position:absolute;right:8px;top:8px;border:0;background:none;color:var(--ink);font-size:16px}
 .sh{display:inline-block;padding:0 4px;border:1px solid var(--ink);border-radius:5px;font-size:12px}
-.love{text-align:center;font-size:11px;color:var(--mut);opacity:.8;margin:auto 0 0;padding-top:18px}
+.love{text-align:center;font-size:11px;color:var(--mut);opacity:.8;margin:18px 0 4px}
 @font-face{font-family:'Sweet';src:url(sacramento.woff2) format('woff2');font-display:block}
 #secret{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(40,36,30,.55);opacity:0;pointer-events:none;transition:opacity .5s}
 #secret.on{opacity:1;pointer-events:auto}
