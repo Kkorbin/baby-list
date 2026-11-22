@@ -52,6 +52,20 @@ h1{font-size:22px;margin:0;display:flex;align-items:center;gap:6px}
 .install button{position:absolute;right:8px;top:8px;border:0;background:none;color:var(--ink);font-size:16px}
 .sh{display:inline-block;padding:0 4px;border:1px solid var(--ink);border-radius:5px;font-size:12px}
 .love{text-align:center;font-size:11px;color:var(--mut);opacity:.8;margin:auto 0 0;padding-top:18px}
+@font-face{font-family:'Sweet';src:url(sacramento.woff2) format('woff2');font-display:block}
+#secret{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(40,36,30,.55);opacity:0;pointer-events:none;transition:opacity .5s}
+#secret.on{opacity:1;pointer-events:auto}
+.sign{position:relative;width:100%;max-width:440px;padding:46px 26px;border-radius:4px;color:#7f8d73;
+ background-color:#f2ede3;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cg fill='none' stroke='%23b9c0ad' stroke-width='1' opacity='.32'%3E%3Cpath d='M0 40 L40 0 M40 80 L80 40 M0 40 L40 80 M40 0 L80 40'/%3E%3C/g%3E%3Cg fill='%23b9c0ad' opacity='.6'%3E%3Ccircle cx='40' cy='40' r='3'/%3E%3Ccircle cx='36' cy='37' r='2'/%3E%3Ccircle cx='44' cy='37' r='2'/%3E%3Ccircle cx='40' cy='45' r='2'/%3E%3Cpath d='M38 47 l2 6 2-6z'/%3E%3Ccircle cx='0' cy='0' r='1.5'/%3E%3Ccircle cx='80' cy='0' r='1.5'/%3E%3Ccircle cx='0' cy='80' r='1.5'/%3E%3Ccircle cx='80' cy='80' r='1.5'/%3E%3C/g%3E%3C/svg%3E");
+ box-shadow:0 18px 40px #0005;transform:scale(.96);transition:transform .5s}
+#secret.on .sign{transform:scale(1)}
+.rail{position:absolute;left:-10px;right:-10px;height:22px;background:#c49a6c;border-radius:3px;
+ background-image:radial-gradient(circle at 50% 50%,#ead2a8 0 3.2px,transparent 3.6px);background-size:9px 9px;background-repeat:repeat-x;background-position:0 50%;box-shadow:0 2px 4px #0003}
+.rail::before{content:"";position:absolute;left:0;right:0;height:10px;background:radial-gradient(circle at 50% 100%,#c49a6c 9px,transparent 9.5px);background-size:22px 10px}
+.rail.t{top:-12px}.rail.t::before{top:-9px}
+.rail.b{bottom:-12px}.rail.b::before{bottom:-9px;transform:scaleY(-1)}
+.sweet{font-family:'Sweet',cursive;font-size:clamp(30px,8.6vw,40px);line-height:1.5;text-align:center;margin:0}
+.sclose{position:absolute;bottom:-46px;left:0;right:0;text-align:center;color:#f2ede3;font-size:13px;opacity:.85}
 .hide{display:none}
 </style></head><body>
 <div id="install" class="install hide">To install: tap <b>Share</b> <span class="sh">⬆︎</span> below, then <b>Add to Home Screen</b>.<button id="xi">✕</button></div>
@@ -75,6 +89,7 @@ h1{font-size:22px;margin:0;display:flex;align-items:center;gap:6px}
   <div id="list"></div>
   <button id="csv" class="export">Export / share as CSV</button>
 </section>
+<div id="secret" aria-hidden="true"><div class="sign"><div class="rail t"></div><p class="sweet">Sweet little one, you will always be the miracle that makes our life complete</p><div class="rail b"></div><div class="sclose">tap anywhere to close</div></div></div>
 <footer class="love">Made with ❤️ for you, Cienna · Love, your husband</footer>
 
 <script>
@@ -152,6 +167,10 @@ $('csv').onclick=async()=>{
   if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:'Kick counts'});return}catch(e){}}
   const a=document.createElement('a');a.href=URL.createObjectURL(file);a.download='kicks.csv';a.click();
 };
+// a little secret: tap the footprints 3 times quickly
+let ft=[];
+document.querySelector('.feet').addEventListener('pointerdown',()=>{const n=Date.now();ft=ft.filter(t=>n-t<1500);ft.push(n);if(ft.length>=3){ft=[];$('secret').classList.add('on')}});
+$('secret').addEventListener('click',()=>$('secret').classList.remove('on'));
 const standalone=window.navigator.standalone||matchMedia('(display-mode: standalone)').matches;
 if(!standalone&&!localStorage.getItem('kicks.hideInstall')) $('install').classList.remove('hide');
 $('xi').onclick=()=>{$('install').classList.add('hide');localStorage.setItem('kicks.hideInstall','1')};
