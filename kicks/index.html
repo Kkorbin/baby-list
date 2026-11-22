@@ -18,7 +18,7 @@ html,body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-syst
 body{padding:env(safe-area-inset-top) 16px calc(env(safe-area-inset-bottom) + 16px)}
 header{display:flex;justify-content:space-between;align-items:center;padding:14px 2px 6px}
 h1{font-size:22px;margin:0;display:flex;align-items:center;gap:6px}
-.feet{width:30px;height:30px;color:var(--sage)}
+.feet{width:30px;height:30px;color:var(--sage);touch-action:manipulation;cursor:pointer}
 .tabs button{background:none;border:0;color:var(--mut);font-size:16px;font-weight:600;padding:6px 8px}
 .tabs button.on{color:var(--sage)}
 .stats{display:flex;gap:10px;margin:10px 0}
@@ -169,8 +169,10 @@ $('csv').onclick=async()=>{
 };
 // a little secret: tap the footprints 3 times quickly
 let ft=[];
-document.querySelector('.feet').addEventListener('pointerdown',()=>{const n=Date.now();ft=ft.filter(t=>n-t<1500);ft.push(n);if(ft.length>=3){ft=[];$('secret').classList.add('on')}});
-$('secret').addEventListener('click',()=>$('secret').classList.remove('on'));
+let openedAt=0;
+document.querySelector('.feet').addEventListener('click',()=>{const n=Date.now();ft=ft.filter(t=>n-t<1500);ft.push(n);if(ft.length>=3){ft=[];openedAt=n;$('secret').classList.add('on')}});
+// ignore the tail end of the opening tap so it doesn't close right away
+$('secret').addEventListener('click',()=>{ if(Date.now()-openedAt>600) $('secret').classList.remove('on'); });
 const standalone=window.navigator.standalone||matchMedia('(display-mode: standalone)').matches;
 if(!standalone&&!localStorage.getItem('kicks.hideInstall')) $('install').classList.remove('hide');
 $('xi').onclick=()=>{$('install').classList.add('hide');localStorage.setItem('kicks.hideInstall','1')};
