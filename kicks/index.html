@@ -25,7 +25,7 @@ h1{font-size:22px;margin:0;display:flex;align-items:center;gap:6px}
 .stat{flex:1;background:var(--card);border-radius:14px;padding:12px;text-align:center}
 .stat b{display:block;font-size:30px;font-variant-numeric:tabular-nums}
 .stat span{font-size:12px;color:var(--mut)}
-.tapwrap{width:100%;aspect-ratio:1/1;max-height:42vh;margin:8px auto;display:flex;align-items:center;justify-content:center}
+.tapwrap{width:100%;aspect-ratio:1/1;max-height:42vh;max-height:42svh;margin:8px auto;display:flex;align-items:center;justify-content:center}
 #tap{display:flex;flex-direction:column;align-items:center;justify-content:center;height:80%;aspect-ratio:1/1;width:auto;margin:0;border:0;border-radius:50%;background:var(--sage);color:#fff;font-size:26px;font-weight:700;box-shadow:0 8px 24px #0002;transition:transform .06s;touch-action:manipulation;user-select:none;-webkit-user-select:none}
 #tap small{font-size:15px;font-weight:500;opacity:.85;margin-top:6px}
 #tap.hit,.ty.hit{transform:scale(.96)}
@@ -173,6 +173,10 @@ let openedAt=0;
 document.querySelector('.feet').addEventListener('click',()=>{const n=Date.now();ft=ft.filter(t=>n-t<1500);ft.push(n);if(ft.length>=3){ft=[];openedAt=n;$('secret').classList.add('on')}});
 // ignore the tail end of the opening tap so it doesn't close right away
 $('secret').addEventListener('click',()=>{ if(Date.now()-openedAt>600) $('secret').classList.remove('on'); });
+// lock the Kick button size so it doesn't jump when iOS briefly reports a different screen height (app switching)
+function sizeTap(){ const w=document.querySelector('.tapwrap'); const side=Math.min(document.documentElement.clientWidth-32, Math.round(0.42*Math.max(screen.height,screen.width>screen.height?0:screen.height))); w.style.width=side+'px'; w.style.height=side+'px'; w.style.maxHeight='none'; w.style.aspectRatio='auto'; }
+let lastW=0; const maybeSize=()=>{ const cw=document.documentElement.clientWidth; if(cw!==lastW){lastW=cw; sizeTap();} };
+maybeSize(); addEventListener('resize',maybeSize); addEventListener('orientationchange',()=>setTimeout(()=>{lastW=0;maybeSize()},300));
 const standalone=window.navigator.standalone||matchMedia('(display-mode: standalone)').matches;
 if(!standalone&&!localStorage.getItem('kicks.hideInstall')) $('install').classList.remove('hide');
 $('xi').onclick=()=>{$('install').classList.add('hide');localStorage.setItem('kicks.hideInstall','1')};
