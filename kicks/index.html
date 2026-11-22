@@ -17,7 +17,8 @@
 html,body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,system-ui,sans-serif}
 body{padding:env(safe-area-inset-top) 16px calc(env(safe-area-inset-bottom) + 16px);display:flex;flex-direction:column;min-height:100vh;min-height:100dvh}
 header{display:flex;justify-content:space-between;align-items:center;padding:14px 2px 6px}
-h1{font-size:22px;margin:0}
+h1{font-size:22px;margin:0;display:flex;align-items:center;gap:6px}
+.feet{width:30px;height:30px;color:var(--sage)}
 .tabs button{background:none;border:0;color:var(--mut);font-size:16px;font-weight:600;padding:6px 8px}
 .tabs button.on{color:var(--sage)}
 .stats{display:flex;gap:10px;margin:10px 0}
@@ -54,7 +55,7 @@ h1{font-size:22px;margin:0}
 .hide{display:none}
 </style></head><body>
 <div id="install" class="install hide">To install: tap <b>Share</b> <span class="sh">⬆︎</span> below, then <b>Add to Home Screen</b>.<button id="xi">✕</button></div>
-<header><h1>👣 Kicks</h1><div class="tabs"><button id="tCount" class="on">Count</button><button id="tHist">History</button></div></header>
+<header><h1><svg class="feet" viewBox="18 14 66 66" aria-hidden="true"><g fill="currentColor"><ellipse cx="38" cy="62" rx="11" ry="16"/><circle cx="29" cy="37" r="4.5"/><circle cx="35" cy="33" r="4"/><circle cx="41" cy="33" r="3.7"/><circle cx="46" cy="36" r="3.3"/><circle cx="49.5" cy="41" r="3"/><ellipse cx="64" cy="50" rx="11" ry="16"/><circle cx="55" cy="25" r="4.5"/><circle cx="61" cy="21" r="4"/><circle cx="67" cy="21" r="3.7"/><circle cx="72" cy="24" r="3.3"/><circle cx="75.5" cy="29" r="3"/></g></svg> Kicks</h1><div class="tabs"><button id="tCount" class="on">Count</button><button id="tHist">History</button></div></header>
 
 <section id="vCount">
   <div class="stats">
